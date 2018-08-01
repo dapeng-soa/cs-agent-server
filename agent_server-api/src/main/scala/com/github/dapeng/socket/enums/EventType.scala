@@ -24,6 +24,7 @@ object EventType {
   val SERVER_TIME = new EventType(7, "serverTime")
   val GET_SERVER_TIME = new EventType(8, "getServerTime")
   val DEPLOY = new EventType(9, "deploy")
+  val GET_YAML_FILE = new EventType(10, "getYamlFile")
   def unknown(id: Int) = new EventType(id, id + "")
 
   def valueOf(id: Int): EventType = id match {
@@ -36,6 +37,7 @@ object EventType {
     case 7 => SERVER_TIME
     case 8 => GET_SERVER_TIME
     case 9 => DEPLOY
+    case 10 => GET_YAML_FILE
     case _ => unknown(id)
   }
 

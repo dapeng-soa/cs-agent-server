@@ -9,6 +9,7 @@ import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.github.dapeng.socket.AgentEvent;
 import com.github.dapeng.socket.HostAgent;
+import com.github.dapeng.socket.entity.ServerTimeInfo;
 import com.github.dapeng.socket.enums.EventType;
 import com.google.gson.Gson;
 
@@ -18,6 +19,7 @@ import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collectors;
 
 public class Main {
 
@@ -33,7 +35,7 @@ public class Main {
         config.setAllowCustomRequests(true);
 
         Map<String, HostAgent> nodesMap = new ConcurrentHashMap<String, HostAgent>();
-        Map<String, Long> serverDeployTime = new ConcurrentHashMap<>();
+        Map<String, ServerTimeInfo> serverDeployTime = new ConcurrentHashMap<>();
         Map<String, HostAgent> webClientMap = new ConcurrentHashMap<String, HostAgent>();
 
         final SocketIOServer server = new SocketIOServer(config);
@@ -133,17 +135,29 @@ public class Main {
                     @Override
                     public void onData(SocketIOClient client,
                                        String data, AckRequest ackRequest) {
-                        System.out.println(" received serverTime cmd.....");
                         String[] tempData = data.split(":");
-                        String ip = tempData[0];
-                        String time = tempData[1];
-                        serverDeployTime.put(ip,Long.valueOf(time));
+                        String socketId = tempData[0];
+                        String ip = tempData[1];
+                        String time = tempData[2];
+                        System.out.println(" received serverTime cmd....value: socketId:" + socketId + " ip: " + ip + " time: " + time);
+                        System.out.println(" received");
+                        ServerTimeInfo info = new ServerTimeInfo();
+                        info.setSocketId(socketId);
+                        info.setIp(ip);
+                        info.setTime(Long.valueOf(time));
+                        serverDeployTime.put(ip, info);
                         if (serverDeployTime.size() == nodesMap.size()) {
                             server.getRoomOperations("web").sendEvent(EventType.SERVER_TIME().name(), serverDeployTime);
                         }
                     }
                 }
         );
+
+        server.addEventListener(EventType.GET_YAML_FILE().name(), String.class, (client,
+                data, ackRequest) -> {
+            System.out.println(" server received getYamlFile cmd");
+
+        });
 
         server.addEventListener(EventType.DEPLOY().name(), String.class, new DataListener<String>() {
             @Override
@@ -178,7 +192,7 @@ public class Main {
     private static void notifyWebClients(Map<String, HostAgent> map, SocketIOServer server) {
         Collection<HostAgent> agents = map.values();
 
-        System.out.println(" current agent clients size: " + agents.stream().map(i -> i.getIp()));
+        System.out.println(" current agent clients size: " + agents.stream().map(i -> i.getIp()).collect(Collectors.toList()));
 
         server.getRoomOperations("nodes").sendEvent("serverList", agents);
 
