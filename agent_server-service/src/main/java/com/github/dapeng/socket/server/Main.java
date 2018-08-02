@@ -13,10 +13,7 @@ import com.github.dapeng.socket.entity.ServerTimeInfo;
 import com.github.dapeng.socket.enums.EventType;
 import com.google.gson.Gson;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -141,19 +138,25 @@ public class Main {
                         String serviceName = tempData[1];
                         String ip = tempData[2];
                         String time = tempData[3];
-                        System.out.println(" received serverTime cmd..." + socketId);
-                        System.out.println(" received");
+                        System.out.println(" received getServerTimeResp cmd..." + data);
                         ServerTimeInfo info = new ServerTimeInfo();
                         info.setSocketId(socketId);
                         info.setIp(ip);
                         info.setTime(Long.valueOf(time));
 
-                        if (serverDeployTime)
-
-                        serverDeployTime.put(ip, info);
-                        if (serverDeployTime.size() == nodesMap.size()) {
-                            server.getRoomOperations("web").sendEvent(EventType.GET_SERVER_TIME_RESP().name(), serverDeployTime);
+                        if (serverDeployTime.containsKey(serviceName)) {
+                            serverDeployTime.get(serviceName).add(info);
+                        } else {
+                            List<ServerTimeInfo> infos = new ArrayList<>();
+                            infos.add(info);
+                            serverDeployTime.put(serviceName, infos);
                         }
+
+                        serverDeployTime.values().forEach(i -> {
+                            if (i.size() == nodesMap.size()) {
+                                server.getRoomOperations("web").sendEvent(EventType.GET_SERVER_TIME_RESP().name(), new Gson().toJson(i));
+                            }
+                        });
                     }
                 }
         );
