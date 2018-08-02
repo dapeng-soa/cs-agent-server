@@ -14,6 +14,7 @@ import com.github.dapeng.socket.enums.EventType;
 import com.google.gson.Gson;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
@@ -35,7 +36,7 @@ public class Main {
         config.setAllowCustomRequests(true);
 
         Map<String, HostAgent> nodesMap = new ConcurrentHashMap<String, HostAgent>();
-        Map<String, ServerTimeInfo> serverDeployTime = new ConcurrentHashMap<>();
+        Map<String, List<ServerTimeInfo>> serverDeployTime = new ConcurrentHashMap<>();
         Map<String, HostAgent> webClientMap = new ConcurrentHashMap<String, HostAgent>();
 
         final SocketIOServer server = new SocketIOServer(config);
@@ -123,7 +124,7 @@ public class Main {
                     @Override
                     public void onData(SocketIOClient client,
                                        String data, AckRequest ackRequest) {
-                        System.out.println(" received serverTime cmd.....");
+                        System.out.println(" received serverTime cmd....." + data);
                         serverDeployTime.clear();
                         server.getRoomOperations("nodes").sendEvent(EventType.GET_SERVER_TIME().name(),data);
                     }
@@ -137,14 +138,18 @@ public class Main {
                                        String data, AckRequest ackRequest) {
                         String[] tempData = data.split(":");
                         String socketId = tempData[0];
-                        String ip = tempData[1];
-                        String time = tempData[2];
-                        System.out.println(" received serverTime cmd....value: socketId:" + socketId + " ip: " + ip + " time: " + time);
+                        String serviceName = tempData[1];
+                        String ip = tempData[2];
+                        String time = tempData[3];
+                        System.out.println(" received serverTime cmd..." + socketId);
                         System.out.println(" received");
                         ServerTimeInfo info = new ServerTimeInfo();
                         info.setSocketId(socketId);
                         info.setIp(ip);
                         info.setTime(Long.valueOf(time));
+
+                        if (serverDeployTime)
+
                         serverDeployTime.put(ip, info);
                         if (serverDeployTime.size() == nodesMap.size()) {
                             server.getRoomOperations("web").sendEvent(EventType.GET_SERVER_TIME_RESP().name(), serverDeployTime);
