@@ -131,7 +131,7 @@ public class Main {
         );
 
         //获取到agent返回的时间，并转发给web节点
-        server.addEventListener(EventType.SERVER_TIME().name(), String.class, new DataListener<String>() {
+        server.addEventListener(EventType.GET_SERVER_TIME_RESP().name(), String.class, new DataListener<String>() {
                     @Override
                     public void onData(SocketIOClient client,
                                        String data, AckRequest ackRequest) {
@@ -147,7 +147,7 @@ public class Main {
                         info.setTime(Long.valueOf(time));
                         serverDeployTime.put(ip, info);
                         if (serverDeployTime.size() == nodesMap.size()) {
-                            server.getRoomOperations("web").sendEvent(EventType.SERVER_TIME().name(), serverDeployTime);
+                            server.getRoomOperations("web").sendEvent(EventType.GET_SERVER_TIME_RESP().name(), serverDeployTime);
                         }
                     }
                 }
