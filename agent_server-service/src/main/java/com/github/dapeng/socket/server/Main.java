@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class Main {
 
     public static void main(String[] args) {
-        init("127.0.0.1", 9095);
+        init("192.168.4.148", 9095);
     }
 
     public static void init(String hostName, int port) {
@@ -98,6 +98,19 @@ public class Main {
                     System.out.println(" Failed to get socketClient......");
                 }
             });
+        });
+
+
+        server.addEventListener(EventType.NODE_EVENT().name(), String.class, new DataListener<String>() {
+
+            @Override
+            public void onData(SocketIOClient socketIOClient, String agentEvent, AckRequest ackRequest) throws Exception {
+                // logger.info(" receive webEvent: " + agentEvent.getCmd());
+                System.out.println("==================================================");
+                System.out.println(" agentEvent: " + agentEvent);
+
+                server.getRoomOperations("web").sendEvent(EventType.NODE_EVENT().name(), agentEvent);
+            }
         });
 
         //发送指令给agent获取当前节点的部署时间
