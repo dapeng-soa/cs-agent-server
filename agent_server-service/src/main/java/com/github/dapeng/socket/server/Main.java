@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class Main {
 
     public static void main(String[] args) {
-        init("127.0.0.1", 9095);
+        init("192.168.4.148", 9095);
     }
 
     public static void init(String hostName, int port) {
@@ -211,7 +211,7 @@ public class Main {
                 }
             });
 
-            server.getRoomOperations("nodes").sendEvent(EventType.STOP().name(), data);
+            //server.getRoomOperations("nodes").sendEvent(EventType.STOP().name(), data);
         });
 
         server.addEventListener(EventType.RESTART().name(), String.class, (client, data, ackRequest) -> {
@@ -226,7 +226,7 @@ public class Main {
                 }
             });
 
-            server.getRoomOperations("nodes").sendEvent(EventType.STOP().name(), data);
+            //server.getRoomOperations("nodes").sendEvent(EventType.STOP().name(), data);
         });
 
 
