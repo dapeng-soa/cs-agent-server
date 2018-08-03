@@ -9,6 +9,8 @@ import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.github.dapeng.socket.AgentEvent;
 import com.github.dapeng.socket.HostAgent;
+import com.github.dapeng.socket.entity.DeployRequest;
+import com.github.dapeng.socket.entity.DeployVo;
 import com.github.dapeng.socket.entity.ServerTimeInfo;
 import com.github.dapeng.socket.enums.EventType;
 import com.google.gson.Gson;
@@ -171,8 +173,49 @@ public class Main {
             @Override
             public void onData(SocketIOClient client,
                                String data, AckRequest ackRequest) {
+                DeployVo vo = new Gson().fromJson(data, DeployVo.class);
+
+                nodesMap.values().forEach(agent -> {
+                    if (vo.getIp().equals(agent.getIp())) {
+                        SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));
+                        if (targetAgent != null) {
+                            targetAgent.sendEvent(EventType.DEPLOY().name(), data);
+                        }
+                    }
+                });
                 server.getRoomOperations("nodes").sendEvent(EventType.DEPLOY().name(), data);
             }
+        });
+
+
+        server.addEventListener(EventType.STOP().name(), String.class, (client, data, ackRequest) -> {
+            DeployRequest request = new Gson().fromJson(data, DeployRequest.class);
+
+            nodesMap.values().forEach(agent -> {
+                if (request.getIp().equals(agent.getIp())) {
+                    SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));
+                    if (targetAgent != null) {
+                        targetAgent.sendEvent(EventType.STOP().name(), data);
+                    }
+                }
+            });
+
+            server.getRoomOperations("nodes").sendEvent(EventType.STOP().name(), data);
+        });
+
+        server.addEventListener(EventType.RESTART().name(), String.class, (client, data, ackRequest) -> {
+            DeployRequest request = new Gson().fromJson(data, DeployRequest.class);
+
+            nodesMap.values().forEach(agent -> {
+                if (request.getIp().equals(agent.getIp())) {
+                    SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));
+                    if (targetAgent != null) {
+                        targetAgent.sendEvent(EventType.RESTART().name(), data);
+                    }
+                }
+            });
+
+            server.getRoomOperations("nodes").sendEvent(EventType.STOP().name(), data);
         });
 
 

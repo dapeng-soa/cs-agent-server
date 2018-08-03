@@ -5,6 +5,15 @@ public class DeployVo {
     private String fileContent;
     private String serviceName;
     private Long lastModifyTime;
+    private String ip;
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
 
     public String getFileContent() {
         return fileContent;
