@@ -55,8 +55,10 @@ public class Main {
                     nodesMap.remove(socketIOClient.getSessionId().toString());
 
                     System.out.println(String.format("leave room  nodes %s", socketIOClient.getSessionId()));
-                    notifyWebClients(nodesMap, server);
-                } else {
+//                    notifyWebClients(nodesMap, server);
+                }
+
+                if (webClientMap.containsKey(socketIOClient.getSessionId().toString())) {
                     socketIOClient.leaveRoom("web");
                     System.out.println(String.format("leave room web  %s", socketIOClient.getSessionId()));
                 }
@@ -72,7 +74,7 @@ public class Main {
                         String name = data.split(":")[0];
                         String ip = data.split(":")[1];
                         nodesMap.put(client.getSessionId().toString(), new HostAgent(name, ip, client.getSessionId().toString()));
-                        notifyWebClients(nodesMap, server);
+//                        notifyWebClients(nodesMap, server);
                     }
                 }
 
@@ -88,7 +90,7 @@ public class Main {
                         String name = data.split(":")[0];
                         String ip = data.split(":")[1];
                         webClientMap.put(client.getSessionId().toString(), new HostAgent(name, ip, client.getSessionId().toString()));
-                        notifyWebClients(nodesMap, server);
+//                        notifyWebClients(nodesMap, server);
                     }
                 }
 
@@ -123,6 +125,7 @@ public class Main {
                                        String data, AckRequest ackRequest) {
                         System.out.println(" received serverTime cmd....." + data);
                         serverDeployTime.clear();
+                        System.out.println(server.getRoomOperations("nodes").getClients().size());
                         server.getRoomOperations("nodes").sendEvent(EventType.GET_SERVER_TIME().name(),data);
                     }
                 }
@@ -142,6 +145,7 @@ public class Main {
                         ServerTimeInfo info = new ServerTimeInfo();
                         info.setSocketId(socketId);
                         info.setIp(ip);
+                        info.setServiceName(serviceName);
                         info.setTime(Long.valueOf(time));
 
                         if (serverDeployTime.containsKey(serviceName)) {
@@ -152,11 +156,18 @@ public class Main {
                             serverDeployTime.put(serviceName, infos);
                         }
 
+
+                        List<String> sentServices = new ArrayList<>();
                         serverDeployTime.values().forEach(i -> {
                             if (i.size() == nodesMap.size()) {
+                                System.out.println(server.getRoomOperations("web").getClients().size());
                                 server.getRoomOperations("web").sendEvent(EventType.GET_SERVER_TIME_RESP().name(), new Gson().toJson(i));
+                                sentServices.add(serviceName);
                             }
                         });
+
+                        sentServices.forEach(serverDeployTime::remove);
+
                     }
                 }
         );
@@ -197,12 +208,12 @@ public class Main {
     }
 
 
-    private static void notifyWebClients(Map<String, HostAgent> map, SocketIOServer server) {
-        Collection<HostAgent> agents = map.values();
-
-        System.out.println(" current agent clients size: " + agents.stream().map(i -> i.getIp()).collect(Collectors.toList()));
-
-        server.getRoomOperations("nodes").sendEvent("serverList", agents);
-
-    }
+//    private static void notifyWebClients(Map<String, HostAgent> map, SocketIOServer server) {
+//        Collection<HostAgent> agents = map.values();
+//
+//        System.out.println(" current agent clients size: " + agents.stream().map(i -> i.getIp()).collect(Collectors.toList()));
+//
+//        server.getRoomOperations("nodes").sendEvent("serverList", agents);
+//
+//    }
 }
