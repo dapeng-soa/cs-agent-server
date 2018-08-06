@@ -3,6 +3,7 @@ import java.io.{FileInputStream, FileOutputStream}
 name := "agent_server"
 
 resolvers += Resolver.mavenLocal
+resolvers ++= List("today nexus" at "http://nexus.today36524.td/repository/maven-public/")
 
 lazy val commonSettings = Seq(
   organization := "com.github.dapeng",
@@ -19,7 +20,18 @@ lazy val api = (project in file("agent_server-api"))
     libraryDependencies ++= Seq(
       "com.github.wangzaixiang" %% "scala-sql" % "2.0.6",
       "com.google.code.gson" % "gson" % "2.3.1"
-    )
+    ),
+    publishTo := {
+      val isSnapshot = version.value.contains("-SNAPSHOT")
+      val urlPrefix = "http://nexus.today36524.td/repository/"
+      val (name, url) = if (isSnapshot)
+        ("today-snapshots", urlPrefix + "maven-snapshots")
+      else
+        ("today-releases", urlPrefix + "maven-releases")
+      Some(name at url)
+    },
+    credentials += Credentials("Sonatype Nexus Repository Manager", "nexus.today36524.td", "central-services", "E@Z.nrW3"),
+
   )
 
 /**
