@@ -48,8 +48,9 @@ lazy val service = (project in file("agent_server-service"))
     name := "agent_server_service",
     libraryDependencies ++= Seq(
       "org.yaml" % "snakeyaml" % "1.17",
-      "com.corundumstudio.socketio" % "netty-socketio" % "1.7.12",
-      "io.socket" % "socket.io-client" % "0.8.1",
+      "io.netty" % "netty-all" % "4.1.20.final",
+      "com.corundumstudio.socketio" % "netty-socketio" % "1.7.12" excludeAll("io.netty"),
+      "io.socket" % "socket.io-client" % "0.8.1" excludeAll("io.netty"),
       "com.github.wangzaixiang" %% "scala-sql" % "2.0.6",
       "com.google.code.gson" % "gson" % "2.3.1"
     ))
