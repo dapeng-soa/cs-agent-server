@@ -28,7 +28,7 @@ public class Main {
             host = args[0];
             port = Integer.valueOf(args[1]);
         }
-        System.out.println("socket server init on :" + host + ":" + port);
+        System.out.println("===> socket server initing :" + host + ":" + port);
         init(host, port);
     }
 
@@ -185,7 +185,7 @@ public class Main {
 
         server.addEventListener(EventType.DEPLOY().name(), String.class, (client, data, ackRequest) -> {
             DeployVo vo = new Gson().fromJson(data, DeployVo.class);
-
+            System.out.println(nodesMap.values());
             nodesMap.values().forEach(agent -> {
                 if (vo.getIp().equals(agent.getIp())) {
                     SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));

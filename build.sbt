@@ -3,7 +3,6 @@ import java.io.{FileInputStream, FileOutputStream}
 name := "agent_server"
 
 resolvers += Resolver.mavenLocal
-resolvers ++= List("today nexus" at "http://nexus.today36524.td/repository/maven-public/")
 
 lazy val commonSettings = Seq(
   organization := "com.github.dapeng",
@@ -20,32 +19,24 @@ lazy val api = (project in file("agent_server-api"))
     libraryDependencies ++= Seq(
       "com.github.wangzaixiang" %% "scala-sql" % "2.0.6",
       "com.google.code.gson" % "gson" % "2.3.1"
-    ),
-    publishTo := {
-      val isSnapshot = version.value.contains("-SNAPSHOT")
-      val urlPrefix = "http://nexus.today36524.td/repository/"
-      val (name, url) = if (isSnapshot)
-        ("today-snapshots", urlPrefix + "maven-snapshots")
-      else
-        ("today-releases", urlPrefix + "maven-releases")
-      Some(name at url)
-    },
-    credentials += Credentials("Sonatype Nexus Repository Manager", "nexus.today36524.td", "central-services", "E@Z.nrW3"),
-
+    )
   )
 
 /**
+  *
   * <dependency>
-  * <groupId>com.google.code.gson</groupId>
-  * <artifactId>gson</artifactId>
-  * <version>2.3.1</version>
+  * <groupId>io.netty</groupId>
+  * <artifactId>netty-all</artifactId>
+  * <version>4.1.20.Final</version>
   * </dependency>
+  *
   */
 lazy val service = (project in file("agent_server-service"))
   .dependsOn( api )
   .settings(
     commonSettings,
     name := "agent_server_service",
+    assembly/mainClass := Some("com.github.dapeng.socket.server.Main"),
     libraryDependencies ++= Seq(
       "org.yaml" % "snakeyaml" % "1.17",
       "io.netty" % "netty-all" % "4.1.20.final",
@@ -56,11 +47,14 @@ lazy val service = (project in file("agent_server-service"))
     ))
 
 
-mainClass in assembly := Some("com.github.dapeng.socket.server.Main")
 lazy val dist = taskKey[File]("make a dist scompose file")
 
 dist := {
-  val assemblyJar = assembly.value
+  println(s"aseemblyValue: ${assembly.value.getName}")
+
+  val assemblyJar = (service/assembly).value
+
+  println(s"assembly jar: $assemblyJar")
 
   val distJar = new java.io.File(target.value, "agentServer")
   val out = new FileOutputStream(distJar)
