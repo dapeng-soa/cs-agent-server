@@ -39,6 +39,10 @@ object EventType {
   val GET_YAML_FILE = new EventType(10, "getYamlFile")
   //获取yamlFile resp
   val GET_YAML_FILE_RESP = new EventType(11, "getYamlFileResp")
+  val GET_SERVICE_STATUS = new EventType(12, "getServiceStatus")
+  val GET_SERVICE_STATUS_RESP = new EventType(13, "getServiceStatusResp")
+  val ERROR_EVENT = new EventType(99, "errorEvent")
+
   def unknown(id: Int) = new EventType(id, id + "")
 
   def valueOf(id: Int): EventType = id match {
@@ -51,6 +55,9 @@ object EventType {
     case 9 => DEPLOY
     case 10 => GET_YAML_FILE
     case 11 => GET_YAML_FILE_RESP
+    case 12 => GET_SERVICE_STATUS
+    case 13 => GET_SERVICE_STATUS_RESP
+    case 99 => ERROR_EVENT
     case _ => unknown(id)
   }
 
