@@ -120,7 +120,7 @@ public class Main {
 
         //发送指令给agent获取当前节点的部署时间
         server.addEventListener(EventType.GET_SERVER_TIME().name(), String.class, (client, data, ackRequest) -> {
-                    System.out.println(" received serverTime cmd....." + data);
+                    System.out.println("server received serverTime cmd....." + data);
                     serverDeployTime.clear();
                     System.out.println(server.getRoomOperations("nodes").getClients().size());
                     server.getRoomOperations("nodes").sendEvent(EventType.GET_SERVER_TIME().name(), data);
@@ -179,13 +179,13 @@ public class Main {
 
         server.addEventListener(EventType.GET_YAML_FILE_RESP().name(), String.class, (client,
                                                                                       data, ackRequest) -> {
-            System.out.println(" server received getServerTimeResp cmd" + data);
+            System.out.println(" server received getYamlFileResp cmd" + data);
             server.getRoomOperations("web").sendEvent(EventType.GET_YAML_FILE_RESP().name(), data);
         });
 
         server.addEventListener(EventType.DEPLOY().name(), String.class, (client, data, ackRequest) -> {
             DeployVo vo = new Gson().fromJson(data, DeployVo.class);
-            System.out.println(nodesMap.values());
+            System.out.println(" server received deploy cmd" + data);
             nodesMap.values().forEach(agent -> {
                 if (vo.getIp().equals(agent.getIp())) {
                     SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));
@@ -194,7 +194,6 @@ public class Main {
                     }
                 }
             });
-            //server.getRoomOperations("nodes").sendEvent(EventType.DEPLOY().name(), data);
         });
 
 
@@ -202,7 +201,7 @@ public class Main {
 
         server.addEventListener(EventType.STOP().name(), String.class, (client, data, ackRequest) -> {
             DeployRequest request = new Gson().fromJson(data, DeployRequest.class);
-
+            System.out.println(" server received stop cmd" + data);
             nodesMap.values().forEach(agent -> {
                 if (request.getIp().equals(agent.getIp())) {
                     SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));
@@ -211,13 +210,11 @@ public class Main {
                     }
                 }
             });
-
-            //server.getRoomOperations("nodes").sendEvent(EventType.STOP().name(), data);
         });
 
         server.addEventListener(EventType.RESTART().name(), String.class, (client, data, ackRequest) -> {
             DeployRequest request = new Gson().fromJson(data, DeployRequest.class);
-
+            System.out.println(" server received restart cmd" + data);
             nodesMap.values().forEach(agent -> {
                 if (request.getIp().equals(agent.getIp())) {
                     SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));
@@ -226,13 +223,11 @@ public class Main {
                     }
                 }
             });
-
-            //server.getRoomOperations("nodes").sendEvent(EventType.STOP().name(), data);
         });
 
         server.addEventListener(EventType.GET_SERVICE_STATUS().name(), String.class, (client, data, ackRequest) -> {
             DeployRequest request = new Gson().fromJson(data, DeployRequest.class);
-
+            System.out.println(" server received getServiceStatus cmd" + data);
             nodesMap.values().forEach(agent -> {
                 if (request.getIp().equals(agent.getIp())) {
                     SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));
@@ -245,25 +240,25 @@ public class Main {
 
         server.addEventListener(EventType.GET_SERVICE_STATUS_RESP().name(), String.class, (client,
                                                                                       data, ackRequest) -> {
-            System.out.println(" server received getServerTimeResp cmd" + data);
+            System.out.println(" server received getServiceStatusResp cmd" + data);
             server.getRoomOperations("web").sendEvent(EventType.GET_SERVICE_STATUS_RESP().name(), data);
         });
 
         server.addEventListener(EventType.DEPLOY_RESP().name(), String.class, (client,
                                                                                            data, ackRequest) -> {
-            System.out.println(" server received getServerTimeResp cmd" + data);
+            System.out.println(" server received deployResp cmd" + data);
             server.getRoomOperations("web").sendEvent(EventType.DEPLOY_RESP().name(), data);
         });
 
         server.addEventListener(EventType.STOP_RESP().name(), String.class, (client,
                                                                                            data, ackRequest) -> {
-            System.out.println(" server received getServerTimeResp cmd" + data);
+            System.out.println(" server received stopResp cmd" + data);
             server.getRoomOperations("web").sendEvent(EventType.STOP_RESP().name(), data);
         });
 
         server.addEventListener(EventType.RESTART_RESP().name(), String.class, (client,
                                                                                            data, ackRequest) -> {
-            System.out.println(" server received getServerTimeResp cmd" + data);
+            System.out.println(" server received restartResp cmd" + data);
             server.getRoomOperations("web").sendEvent(EventType.RESTART_RESP().name(), data);
         });
 
