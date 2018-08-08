@@ -9,6 +9,7 @@ import com.github.dapeng.socket.AgentEvent;
 import com.github.dapeng.socket.HostAgent;
 import com.github.dapeng.socket.entity.DeployRequest;
 import com.github.dapeng.socket.entity.DeployVo;
+import com.github.dapeng.socket.entity.ServerStatusInfo;
 import com.github.dapeng.socket.entity.ServerTimeInfo;
 import com.github.dapeng.socket.enums.EventType;
 import com.github.dapeng.socket.util.IPUtils;
@@ -241,7 +242,18 @@ public class Main {
         server.addEventListener(EventType.GET_SERVICE_STATUS_RESP().name(), String.class, (client,
                                                                                       data, ackRequest) -> {
             System.out.println(" server received getServiceStatusResp cmd" + data);
-            server.getRoomOperations("web").sendEvent(EventType.GET_SERVICE_STATUS_RESP().name(), data);
+            String[] tempData = data.split(":");
+            String socketId = tempData[0];
+            String ip = tempData[1];
+            String serviceName = tempData[2];
+            boolean status = Boolean.valueOf(tempData[3]);
+            ServerStatusInfo info = new ServerStatusInfo();
+            info.setSocketId(socketId);
+            info.setIp(ip);
+            info.setServiceName(serviceName);
+            info.setStatus(status);
+
+            server.getRoomOperations("web").sendEvent(EventType.GET_SERVICE_STATUS_RESP().name(), new Gson().toJson(info));
         });
 
         server.addEventListener(EventType.DEPLOY_RESP().name(), String.class, (client,
