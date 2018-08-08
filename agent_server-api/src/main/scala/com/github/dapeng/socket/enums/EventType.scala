@@ -47,6 +47,7 @@ object EventType {
   val ERROR_EVENT = new EventType(99, "errorEvent")
 
   def unknown(id: Int) = new EventType(id, id + "")
+  def unknown(label: String)= new EventType(999, label)
 
   def valueOf(id: Int): EventType = id match {
     case 1 => NODE_REG
@@ -69,7 +70,29 @@ object EventType {
     case _ => unknown(id)
   }
 
-  def apply(v: Int) = valueOf(v)
+  def findByLabel(label: String): EventType = label match {
+    case "nodeReg" => NODE_REG
+    case "nodeEvent" => NODE_EVENT
+    case "webReg" => WEB_REG
+    case "webEvent" => WEB_EVENT
+    case "getServerTimeResp" => GET_SERVER_TIME_RESP
+    case "getServerTime" => GET_SERVER_TIME
+    case "deploy" => DEPLOY
+    case "deployResp" => DEPLOY_RESP
+    case "stop" => STOP
+    case "stopResp" => STOP_RESP
+    case "restart" => RESTART
+    case "restartResp" => RESTART_RESP
+    case "getYamlFile" => GET_YAML_FILE
+    case "getYamlFileResp" => GET_YAML_FILE_RESP
+    case "getServiceStatus" => GET_SERVICE_STATUS
+    case "getServiceStatusResp" => GET_SERVICE_STATUS_RESP
+    case "errorEvent" => ERROR_EVENT
+    case _ => unknown(label)
+  }
+
+
+  def apply(v: String) = findByLabel(v)
 
   def unapply(v: EventType): Option[Int] = Some(v.id)
 

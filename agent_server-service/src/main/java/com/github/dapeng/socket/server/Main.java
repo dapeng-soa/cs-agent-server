@@ -198,6 +198,8 @@ public class Main {
         });
 
 
+
+
         server.addEventListener(EventType.STOP().name(), String.class, (client, data, ackRequest) -> {
             DeployRequest request = new Gson().fromJson(data, DeployRequest.class);
 
@@ -228,6 +230,42 @@ public class Main {
             //server.getRoomOperations("nodes").sendEvent(EventType.STOP().name(), data);
         });
 
+        server.addEventListener(EventType.GET_SERVICE_STATUS().name(), String.class, (client, data, ackRequest) -> {
+            DeployRequest request = new Gson().fromJson(data, DeployRequest.class);
+
+            nodesMap.values().forEach(agent -> {
+                if (request.getIp().equals(agent.getIp())) {
+                    SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));
+                    if (targetAgent != null) {
+                        targetAgent.sendEvent(EventType.GET_SERVICE_STATUS().name(), data);
+                    }
+                }
+            });
+        });
+
+        server.addEventListener(EventType.GET_SERVICE_STATUS_RESP().name(), String.class, (client,
+                                                                                      data, ackRequest) -> {
+            System.out.println(" server received getServerTimeResp cmd" + data);
+            server.getRoomOperations("web").sendEvent(EventType.GET_SERVICE_STATUS_RESP().name(), data);
+        });
+
+        server.addEventListener(EventType.DEPLOY_RESP().name(), String.class, (client,
+                                                                                           data, ackRequest) -> {
+            System.out.println(" server received getServerTimeResp cmd" + data);
+            server.getRoomOperations("web").sendEvent(EventType.DEPLOY_RESP().name(), data);
+        });
+
+        server.addEventListener(EventType.STOP_RESP().name(), String.class, (client,
+                                                                                           data, ackRequest) -> {
+            System.out.println(" server received getServerTimeResp cmd" + data);
+            server.getRoomOperations("web").sendEvent(EventType.STOP_RESP().name(), data);
+        });
+
+        server.addEventListener(EventType.RESTART_RESP().name(), String.class, (client,
+                                                                                           data, ackRequest) -> {
+            System.out.println(" server received getServerTimeResp cmd" + data);
+            server.getRoomOperations("web").sendEvent(EventType.RESTART_RESP().name(), data);
+        });
 
         server.start();
         System.out.println("websocket server started at " + port);
