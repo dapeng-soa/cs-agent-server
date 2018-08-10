@@ -1,26 +1,25 @@
 package com.github.dapeng.socket.server;
 
-import com.corundumstudio.socketio.AckRequest;
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
-import com.corundumstudio.socketio.listener.DataListener;
 import com.github.dapeng.socket.AgentEvent;
 import com.github.dapeng.socket.HostAgent;
 import com.github.dapeng.socket.entity.DeployRequest;
 import com.github.dapeng.socket.entity.DeployVo;
-import com.github.dapeng.socket.entity.ServerStatusInfo;
-import com.github.dapeng.socket.entity.ServerTimeInfo;
+import com.github.dapeng.socket.entity.ServerInfo;
 import com.github.dapeng.socket.enums.EventType;
 import com.github.dapeng.socket.util.IPUtils;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 
 public class Main {
+    private static ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
+
+    private static boolean timed = false;
 
     public static void main(String[] args) {
         String host = IPUtils.localIp();
@@ -33,7 +32,8 @@ public class Main {
         init(host, port);
     }
 
-    public static void init(String hostName, int port) {
+
+    private static void init(String hostName, int port) {
         Configuration config = new Configuration();
         config.setPort(port);
         config.setHostname(hostName);
@@ -41,7 +41,6 @@ public class Main {
         config.setAllowCustomRequests(true);
 
         Map<String, HostAgent> nodesMap = new ConcurrentHashMap<>();
-        Map<String, List<ServerTimeInfo>> serverDeployTime = new ConcurrentHashMap<>();
         Map<String, HostAgent> webClientMap = new ConcurrentHashMap<>();
 
         final SocketIOServer server = new SocketIOServer(config);
@@ -56,12 +55,20 @@ public class Main {
                 nodesMap.remove(socketIOClient.getSessionId().toString());
 
                 System.out.println(String.format("leave room  nodes %s", socketIOClient.getSessionId()));
-//                    notifyWebClients(nodesMap, server);
             }
 
             if (webClientMap.containsKey(socketIOClient.getSessionId().toString())) {
                 socketIOClient.leaveRoom("web");
                 System.out.println(String.format("leave room web  %s", socketIOClient.getSessionId()));
+                webClientMap.remove(socketIOClient.getSessionId().toString());
+                // web 离开通知所有agent客户端
+
+                nodesMap.values().forEach(agent -> {
+                    SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));
+                    if (targetAgent != null) {
+                        targetAgent.sendEvent(EventType.WEB_LEAVE().name(), EventType.WEB_LEAVE().name());
+                    }
+                });
             }
         });
 
@@ -71,7 +78,6 @@ public class Main {
                     String name = data.split(":")[0];
                     String ip = data.split(":")[1];
                     nodesMap.put(client.getSessionId().toString(), new HostAgent(name, ip, client.getSessionId().toString()));
-//                        notifyWebClients(nodesMap, server);
                 }
 
         );
@@ -83,13 +89,11 @@ public class Main {
                     String name = data.split(":")[0];
                     String ip = data.split(":")[1];
                     webClientMap.put(client.getSessionId().toString(), new HostAgent(name, ip, client.getSessionId().toString()));
-//                        notifyWebClients(nodesMap, server);
                 }
 
         );
 
         server.addEventListener(EventType.WEB_EVENT().name(), String.class, (socketIOClient, agentEvent, ackRequest) -> {
-            // logger.info(" receive webEvent: " + agentEvent.getCmd());
             System.out.println("==================================================");
             System.out.println(" agentEvent: " + agentEvent);
 
@@ -107,60 +111,51 @@ public class Main {
         });
 
 
-        server.addEventListener(EventType.NODE_EVENT().name(), String.class, new DataListener<String>() {
+        server.addEventListener(EventType.NODE_EVENT().name(), String.class, (socketIOClient, agentEvent, ackRequest) -> {
+            System.out.println("==================================================");
+            System.out.println(" agentEvent: " + agentEvent);
 
-            @Override
-            public void onData(SocketIOClient socketIOClient, String agentEvent, AckRequest ackRequest) throws Exception {
-                // logger.info(" receive webEvent: " + agentEvent.getCmd());
-                System.out.println("==================================================");
-                System.out.println(" agentEvent: " + agentEvent);
-
-                server.getRoomOperations("web").sendEvent(EventType.NODE_EVENT().name(), agentEvent);
-            }
+            server.getRoomOperations("web").sendEvent(EventType.NODE_EVENT().name(), agentEvent);
         });
 
         //发送指令给agent获取当前节点的部署时间
-        server.addEventListener(EventType.GET_SERVER_TIME().name(), String.class, (client, data, ackRequest) -> {
+        server.addEventListener(EventType.GET_SERVER_INFO().name(), String.class, (client, data, ackRequest) -> {
                     System.out.println("server received serverTime cmd....." + data);
-                    serverDeployTime.clear();
-                    System.out.println(server.getRoomOperations("nodes").getClients().size());
-                    server.getRoomOperations("nodes").sendEvent(EventType.GET_SERVER_TIME().name(), data);
+                    List<DeployRequest> requests = new Gson().fromJson(data, new TypeToken<List<DeployRequest>>() {
+                    }.getType());
+
+                    // 定时发送所有的服务状态检查，但需要做状态判断，只能启动一次定时器
+                    if (!timed) {
+                        timer.scheduleAtFixedRate(() -> {
+                            System.out.println(":::timing send getServiceInfo runing");
+                            sendGetServiceInfo(nodesMap, server, requests);
+                        }, 0, 10000, TimeUnit.MILLISECONDS);
+                        timed = true;
+                    } else {
+                        System.out.println(":::warn getServiceInfo  is Timing ,skip");
+                    }
+                    // 当再次发起调用需要即时发送检查
+                    sendGetServiceInfo(nodesMap, server, requests);
                 }
         );
 
         //获取到agent返回的时间，并转发给web节点
-        server.addEventListener(EventType.GET_SERVER_TIME_RESP().name(), String.class, (client, data, ackRequest) -> {
+        server.addEventListener(EventType.GET_SERVER_INFO_RESP().name(), String.class, (client, data, ackRequest) -> {
+                    System.out.println(" received getServerTimeResp cmd..." + data);
                     String[] tempData = data.split(":");
                     String socketId = tempData[0];
-                    String serviceName = tempData[1];
-                    String ip = tempData[2];
-                    String time = tempData[3];
-                    System.out.println(" received getServerTimeResp cmd..." + data);
-                    ServerTimeInfo info = new ServerTimeInfo();
+                    String ip = tempData[1];
+                    String serviceName = tempData[2];
+                    boolean status = Boolean.valueOf(tempData[3]);
+                    String time = tempData[4];
+                    ServerInfo info = new ServerInfo();
                     info.setSocketId(socketId);
                     info.setIp(ip);
                     info.setServiceName(serviceName);
                     info.setTime(Long.valueOf(time));
-
-                    if (serverDeployTime.containsKey(serviceName)) {
-                        serverDeployTime.get(serviceName).add(info);
-                    } else {
-                        List<ServerTimeInfo> infos = new ArrayList<>();
-                        infos.add(info);
-                        serverDeployTime.put(serviceName, infos);
-                    }
-
-
-                    List<String> sentServices = new ArrayList<>();
-                    serverDeployTime.values().forEach(i -> {
-                        if (i.size() == nodesMap.size()) {
-                            server.getRoomOperations("web").sendEvent(EventType.GET_SERVER_TIME_RESP().name(), new Gson().toJson(i));
-                            sentServices.add(serviceName);
-                        }
-                    });
-
-                    sentServices.forEach(serverDeployTime::remove);
-
+                    info.setStatus(status);
+                    // 单个返回
+                    server.getRoomOperations("web").sendEvent(EventType.GET_SERVER_INFO_RESP().name(), new Gson().toJson(info));
                 }
         );
 
@@ -198,8 +193,6 @@ public class Main {
         });
 
 
-
-
         server.addEventListener(EventType.STOP().name(), String.class, (client, data, ackRequest) -> {
             DeployRequest request = new Gson().fromJson(data, DeployRequest.class);
             System.out.println(" server received stop cmd" + data);
@@ -226,50 +219,20 @@ public class Main {
             });
         });
 
-        server.addEventListener(EventType.GET_SERVICE_STATUS().name(), String.class, (client, data, ackRequest) -> {
-            DeployRequest request = new Gson().fromJson(data, DeployRequest.class);
-            System.out.println(" server received getServiceStatus cmd" + data);
-            nodesMap.values().forEach(agent -> {
-                if (request.getIp().equals(agent.getIp())) {
-                    SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));
-                    if (targetAgent != null) {
-                        targetAgent.sendEvent(EventType.GET_SERVICE_STATUS().name(), data);
-                    }
-                }
-            });
-        });
-
-        server.addEventListener(EventType.GET_SERVICE_STATUS_RESP().name(), String.class, (client,
-                                                                                      data, ackRequest) -> {
-            System.out.println(" server received getServiceStatusResp cmd" + data);
-            String[] tempData = data.split(":");
-            String socketId = tempData[0];
-            String ip = tempData[1];
-            String serviceName = tempData[2];
-            boolean status = Boolean.valueOf(tempData[3]);
-            ServerStatusInfo info = new ServerStatusInfo();
-            info.setSocketId(socketId);
-            info.setIp(ip);
-            info.setServiceName(serviceName);
-            info.setStatus(status);
-
-            server.getRoomOperations("web").sendEvent(EventType.GET_SERVICE_STATUS_RESP().name(), new Gson().toJson(info));
-        });
-
         server.addEventListener(EventType.DEPLOY_RESP().name(), String.class, (client,
-                                                                                           data, ackRequest) -> {
+                                                                               data, ackRequest) -> {
             System.out.println(" server received deployResp cmd" + data);
             server.getRoomOperations("web").sendEvent(EventType.DEPLOY_RESP().name(), data);
         });
 
         server.addEventListener(EventType.STOP_RESP().name(), String.class, (client,
-                                                                                           data, ackRequest) -> {
+                                                                             data, ackRequest) -> {
             System.out.println(" server received stopResp cmd" + data);
             server.getRoomOperations("web").sendEvent(EventType.STOP_RESP().name(), data);
         });
 
         server.addEventListener(EventType.RESTART_RESP().name(), String.class, (client,
-                                                                                           data, ackRequest) -> {
+                                                                                data, ackRequest) -> {
             System.out.println(" server received restartResp cmd" + data);
             server.getRoomOperations("web").sendEvent(EventType.RESTART_RESP().name(), data);
         });
@@ -290,17 +253,18 @@ public class Main {
         }
 
         server.stop();
-
-
     }
 
-
-//    private static void notifyWebClients(Map<String, HostAgent> map, SocketIOServer server) {
-//        Collection<HostAgent> agents = map.values();
-//
-//        System.out.println(" current agent clients size: " + agents.stream().map(i -> i.getIp()).collect(Collectors.toList()));
-//
-//        server.getRoomOperations("nodes").sendEvent("serverList", agents);
-//
-//    }
+    private static void sendGetServiceInfo(Map<String, HostAgent> nodesMap, SocketIOServer server, List<DeployRequest> requests) {
+        requests.forEach(request -> {
+            nodesMap.values().forEach(agent -> {
+                if (request.getIp().equals(agent.getIp())) {
+                    SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));
+                    if (targetAgent != null) {
+                        targetAgent.sendEvent(EventType.GET_SERVER_INFO().name(), new Gson().toJson(request));
+                    }
+                }
+            });
+        });
+    }
 }

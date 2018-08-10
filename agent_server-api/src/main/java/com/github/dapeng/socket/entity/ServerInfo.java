@@ -3,13 +3,22 @@ package com.github.dapeng.socket.entity;
 import com.google.gson.Gson;
 
 /**
- * 服务状态返回体
+ * webAgent serverTime 事件请求格式:
+ * List<String> serviceNames</>
+ *
+ * agent getServerTimeResp事件返回格式: (time的时间到秒)
+ * socketId:serviceName:ip:time:status
+ *
+ * server处理方式
+ * 将agent返回构造serverTimeInfo
+ * @author struy
  */
-public class ServerStatusInfo {
+public class ServerInfo {
 
     private String socketId;
     private String ip;
     private String serviceName;
+    private long time;
     private boolean status;
 
     public String getServiceName() {
@@ -34,6 +43,14 @@ public class ServerStatusInfo {
 
     public void setIp(String ip) {
         this.ip = ip;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 
     public boolean isStatus() {
