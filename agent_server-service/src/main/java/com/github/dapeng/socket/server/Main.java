@@ -19,6 +19,8 @@ import java.util.concurrent.*;
 public class Main {
     private static ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
 
+    private static List<DeployRequest> services = new ArrayList<>(32);
+
     private static boolean timed = false;
 
     public static void main(String[] args) {
@@ -124,11 +126,14 @@ public class Main {
                     List<DeployRequest> requests = new Gson().fromJson(data, new TypeToken<List<DeployRequest>>() {
                     }.getType());
 
+                    // 如有修改应当拷贝一份,定时器需要更新查询的数据
+                    services = requests;
+
                     // 定时发送所有的服务状态检查，但需要做状态判断，只能启动一次定时器
                     if (!timed) {
                         timer.scheduleAtFixedRate(() -> {
                             System.out.println(":::timing send getServiceInfo runing");
-                            sendGetServiceInfo(nodesMap, server, requests);
+                            sendGetServiceInfo(nodesMap, server, services);
                         }, 0, 10000, TimeUnit.MILLISECONDS);
                         timed = true;
                     } else {
