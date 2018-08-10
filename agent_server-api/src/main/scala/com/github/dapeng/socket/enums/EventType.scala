@@ -54,7 +54,7 @@ object EventType {
     case 2 => NODE_EVENT
     case 3 => WEB_REG
     case 4 => WEB_LEAVE
-    case 4 => WEB_EVENT
+    case 5 => WEB_EVENT
     case 6 => GET_SERVER_INFO_RESP
     case 7 => GET_SERVER_INFO
     case 8 => DEPLOY
