@@ -63,6 +63,8 @@ public class Main {
                 socketIOClient.leaveRoom("web");
                 System.out.println(String.format("leave room web  %s", socketIOClient.getSessionId()));
                 webClientMap.remove(socketIOClient.getSessionId().toString());
+                //timer.shutdown();
+                //timed = !timer.isShutdown();
                 // web 离开通知所有agent客户端
 
                 nodesMap.values().forEach(agent -> {
@@ -74,7 +76,7 @@ public class Main {
             }
         });
 
-        server.addEventListener("nodeReg", String.class, (client, data, ackRequest) -> {
+        server.addEventListener(EventType.NODE_REG().name(), String.class, (client, data, ackRequest) -> {
                     client.joinRoom("nodes");
                     System.out.println("nodes Reg");
                     String name = data.split(":")[0];
@@ -85,7 +87,7 @@ public class Main {
         );
 
 
-        server.addEventListener("webReg", String.class, (client, data, ackRequest) -> {
+        server.addEventListener(EventType.WEB_REG().name(), String.class, (client, data, ackRequest) -> {
                     client.joinRoom("web");
                     System.out.println("web Reg..." + client.getSessionId());
                     String name = data.split(":")[0];
@@ -120,6 +122,12 @@ public class Main {
             server.getRoomOperations("web").sendEvent(EventType.NODE_EVENT().name(), agentEvent);
         });
 
+        server.addEventListener(EventType.ERROR_EVENT().name(), String.class, (socketIOClient, agentEvent, ackRequest) -> {
+            System.out.println(" errorEvent: " + agentEvent);
+
+            server.getRoomOperations("web").sendEvent(EventType.ERROR_EVENT().name(), agentEvent);
+        });
+
         //发送指令给agent获取当前节点的部署时间
         server.addEventListener(EventType.GET_SERVER_INFO().name(), String.class, (client, data, ackRequest) -> {
                     System.out.println("server received serverTime cmd....." + data);
@@ -133,14 +141,14 @@ public class Main {
                     if (!timed) {
                         timer.scheduleAtFixedRate(() -> {
                             System.out.println(":::timing send getServiceInfo runing");
-                            sendGetServiceInfo(nodesMap, server, services);
+                            sendGetServiceInfo(nodesMap, server);
                         }, 0, 10000, TimeUnit.MILLISECONDS);
                         timed = true;
                     } else {
                         System.out.println(":::warn getServiceInfo  is Timing ,skip");
                     }
                     // 当再次发起调用需要即时发送检查
-                    sendGetServiceInfo(nodesMap, server, requests);
+                    sendGetServiceInfo(nodesMap, server);
                 }
         );
 
@@ -260,8 +268,9 @@ public class Main {
         server.stop();
     }
 
-    private static void sendGetServiceInfo(Map<String, HostAgent> nodesMap, SocketIOServer server, List<DeployRequest> requests) {
-        requests.forEach(request -> {
+    private static void sendGetServiceInfo(Map<String, HostAgent> nodesMap, SocketIOServer server) {
+        System.out.println("::: request services[" + services.size() + "]" + services);
+        services.forEach(request -> {
             nodesMap.values().forEach(agent -> {
                 if (request.getIp().equals(agent.getIp())) {
                     SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));
