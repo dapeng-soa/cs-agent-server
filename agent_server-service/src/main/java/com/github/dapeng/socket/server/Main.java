@@ -127,7 +127,7 @@ public class Main {
 
         //发送指令给agent获取当前节点的部署时间
         server.addEventListener(EventType.GET_SERVER_INFO().name(), String.class, (client, data, ackRequest) -> {
-                    System.out.println("server received serverTime cmd....." + data);
+                    System.out.println("server received serverInf cmd....." + data);
                     List<DeployRequest> requests = new Gson().fromJson(data, new TypeToken<List<DeployRequest>>() {
                     }.getType());
 
@@ -152,7 +152,7 @@ public class Main {
 
         //获取到agent返回的时间，并转发给web节点
         server.addEventListener(EventType.GET_SERVER_INFO_RESP().name(), String.class, (client, data, ackRequest) -> {
-                    System.out.println(" received getServerTimeResp cmd..." + data);
+                    System.out.println(" received getServerInfoResp cmd..." + data);
                     String[] tempData = data.split(":");
                     String socketId = tempData[0];
                     String ip = tempData[1];
