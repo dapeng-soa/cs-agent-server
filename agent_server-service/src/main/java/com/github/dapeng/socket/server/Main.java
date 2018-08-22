@@ -159,12 +159,14 @@ public class Main {
                     String serviceName = tempData[2];
                     boolean status = Boolean.valueOf(tempData[3]);
                     String time = tempData[4];
+                    String tag = tempData[5];
                     ServerInfo info = new ServerInfo();
                     info.setSocketId(socketId);
                     info.setIp(ip);
                     info.setServiceName(serviceName);
                     info.setTime(Long.valueOf(time));
                     info.setStatus(status);
+                    info.setTag(tag);
                     // 单个返回
                     server.getRoomOperations("web").sendEvent(EventType.GET_SERVER_INFO_RESP().name(), new Gson().toJson(info));
                 }

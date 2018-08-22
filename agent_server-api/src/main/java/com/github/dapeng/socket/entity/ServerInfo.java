@@ -20,6 +20,7 @@ public class ServerInfo {
     private String serviceName;
     private long time;
     private boolean status;
+    private String tag;
 
     public String getServiceName() {
         return serviceName;
@@ -59,6 +60,14 @@ public class ServerInfo {
 
     public void setStatus(boolean status) {
         this.status = status;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 
     @Override
