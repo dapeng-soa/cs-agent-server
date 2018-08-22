@@ -1,10 +1,8 @@
 package com.github.dapeng.socket.server;
 
 import com.corundumstudio.socketio.Configuration;
-import com.corundumstudio.socketio.HandshakeData;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
-import com.corundumstudio.socketio.listener.ExceptionListener;
 import com.github.dapeng.socket.AgentEvent;
 import com.github.dapeng.socket.HostAgent;
 import com.github.dapeng.socket.entity.DeployRequest;
@@ -14,7 +12,6 @@ import com.github.dapeng.socket.enums.EventType;
 import com.github.dapeng.socket.util.IPUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.netty.channel.ChannelHandlerContext;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -44,53 +41,6 @@ public class Main {
         config.setHostname(hostName);
         config.setAllowCustomRequests(true);
 
-        //添加鉴权
-        config.setAuthorizationListener(handshakeData -> {
-            System.out.println("socket client HandshakeData: " + handshakeData);
-            System.out.println(handshakeData.getUrlParams());
-
-            //fixme 鉴权 根据keys 判断
-            List<String> keys = handshakeData.getUrlParams().get("keys");
-            System.out.println("keys: " + keys);
-            if (keys == null || keys.size() == 0) {
-                System.out.println(" Handshake failed: no authorization key found........");
-                return false;
-            } else {
-                String key = keys.get(0);
-                //TODO: key要改
-                if ("123456".equals(key)) {
-                    System.out.println(" Handshake success: correct authorization key........");
-                    return true;
-                } else {
-                    System.out.println(" Handshake failed: authorization key error........");
-                    return false;
-                }
-            }
-        });
-
-
-        config.setExceptionListener(new ExceptionListener() {
-            @Override
-            public void onEventException(Exception e, List<Object> args, SocketIOClient client) {
-                System.out.println("failed to send event: " + args + " socketId: " + client.getSessionId());
-            }
-
-            @Override
-            public void onDisconnectException(Exception e, SocketIOClient client) {
-                System.out.println("failed to disconnect server: " + e.getMessage() + " socketId: " + client.getSessionId());
-            }
-
-            @Override
-            public void onConnectException(Exception e, SocketIOClient client) {
-                System.out.println("failed to connect server: " + e.getMessage() + " socketId: " + client.getSessionId());
-            }
-
-            @Override
-            public boolean exceptionCaught(ChannelHandlerContext ctx, Throwable e) throws Exception {
-                return false;
-            }
-        });
-
         Map<String, HostAgent> nodesMap = new ConcurrentHashMap<>();
         Map<String, HostAgent> webClientMap = new ConcurrentHashMap<>();
 
@@ -112,8 +62,6 @@ public class Main {
                 socketIOClient.leaveRoom("web");
                 System.out.println(String.format("leave room web  %s", socketIOClient.getSessionId()));
                 webClientMap.remove(socketIOClient.getSessionId().toString());
-                //timer.shutdown();
-                //timed = !timer.isShutdown();
                 // web 离开通知所有agent客户端
 
                 nodesMap.values().forEach(agent -> {
@@ -184,6 +132,7 @@ public class Main {
                     }.getType());
 
                     // 如有修改应当拷贝一份,定时器需要更新查询的数据
+                    // fixme 将不同客户端发送的服务都问询一遍,需要去重复，拿并集
                     services = requests;
 
                     // 定时发送所有的服务状态检查，但需要做状态判断，只能启动一次定时器
