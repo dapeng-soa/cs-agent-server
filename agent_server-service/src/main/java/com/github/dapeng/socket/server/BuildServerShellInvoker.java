@@ -1,6 +1,8 @@
 package com.github.dapeng.socket.server;
 
 import com.corundumstudio.socketio.SocketIOServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -15,6 +17,7 @@ import static com.github.dapeng.socket.SystemParas.SHELLNAME;
  * @author duwupeng on 2016-08-10
  */
 public class BuildServerShellInvoker {
+    private static Logger LOGGER = LoggerFactory.getLogger(BuildServerShellInvoker.class);
     final BlockingQueue queue = new LinkedBlockingQueue();
 
     public BlockingQueue getQueue() {
@@ -27,7 +30,7 @@ public class BuildServerShellInvoker {
         BufferedWriter bw = null;
 
         try {
-            System.out.println("execute command:" + SHELLNAME + " " + event);
+            LOGGER.info("execute command:" + SHELLNAME + " " + event);
             Runtime runtime = Runtime.getRuntime();
             Process process;
 
@@ -36,8 +39,8 @@ public class BuildServerShellInvoker {
 
             realCmd = SHELLNAME + event.replace("*", "");
 
-            System.out.println("event:" + event);
-            System.out.println("cmd: " + realCmd);
+            LOGGER.info("event:" + event);
+            LOGGER.info("cmd: " + realCmd);
             cmd = new String[]{"/bin/sh", "-c", realCmd};
 
             // 执行Shell命令
@@ -75,7 +78,7 @@ public class BuildServerShellInvoker {
                     bw.write(inline + "\n");
                 }
                 server.getRoomOperations("web").sendEvent(event + "Event", inline);
-                System.out.println(inline);
+                LOGGER.info(inline);
             }
 
             br.close();
@@ -86,7 +89,7 @@ public class BuildServerShellInvoker {
                     bw.write(inline + "\n");
                 }
                 server.getRoomOperations("web").sendEvent(event + "Event", inline);
-                System.out.println(inline);
+                LOGGER.info(inline);
             }
 
             if (process != null) {

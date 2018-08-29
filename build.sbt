@@ -18,7 +18,11 @@ lazy val api = (project in file("agent_server-api"))
     name := "agent_server-api",
     libraryDependencies ++= Seq(
       "com.github.wangzaixiang" %% "scala-sql" % "2.0.6",
-      "com.google.code.gson" % "gson" % "2.3.1"
+      "com.google.code.gson" % "gson" % "2.3.1",
+      "ch.qos.logback" % "logback-classic" % "1.1.3",
+      "ch.qos.logback" % "logback-core" % "1.1.3",
+      "org.slf4j" % "slf4j-api" % "1.7.13",
+      "org.slf4j" % "jcl-over-slf4j" % "1.7.25"
     )
   )
 
