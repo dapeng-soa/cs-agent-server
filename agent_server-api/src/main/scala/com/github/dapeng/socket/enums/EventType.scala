@@ -44,6 +44,9 @@ object EventType {
   val GET_YAML_FILE = new EventType(14, "getYamlFile")
   //获取yamlFile resp
   val GET_YAML_FILE_RESP = new EventType(15, "getYamlFileResp")
+
+  val BUILD = new EventType(16, "build")
+
   val ERROR_EVENT = new EventType(99, "errorEvent")
 
   def unknown(id: Int) = new EventType(id, id + "")
@@ -65,6 +68,7 @@ object EventType {
     case 13 => RESTART_RESP
     case 14 => GET_YAML_FILE
     case 15 => GET_YAML_FILE_RESP
+    case 16 => BUILD
     case 99 => ERROR_EVENT
     case _ => unknown(id)
   }

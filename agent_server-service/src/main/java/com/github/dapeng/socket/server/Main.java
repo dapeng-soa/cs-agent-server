@@ -5,9 +5,7 @@ import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.github.dapeng.socket.AgentEvent;
 import com.github.dapeng.socket.HostAgent;
-import com.github.dapeng.socket.entity.DeployRequest;
-import com.github.dapeng.socket.entity.DeployVo;
-import com.github.dapeng.socket.entity.ServerInfo;
+import com.github.dapeng.socket.entity.*;
 import com.github.dapeng.socket.enums.EventType;
 import com.github.dapeng.socket.util.IPUtils;
 import com.google.gson.Gson;
@@ -193,6 +191,27 @@ public class Main {
             server.getRoomOperations("web").sendEvent(EventType.GET_YAML_FILE_RESP().name(), data);
         });
 
+        //发布构建任务
+        server.addEventListener(EventType.BUILD().name(), String.class, ((client, data, ackSender) -> {
+            BuildVo buildVo = new Gson().fromJson(data, BuildVo.class);
+            String buildServerIp = buildVo.getBuildServerIp();
+            if (buildServerIp == null && buildServerIp.isEmpty()) {
+                server.getClient(client.getSessionId()).sendEvent(EventType.ERROR_EVENT().name(), "构建服务器的IP不能为空");
+            } else {
+                nodesMap.values().forEach(agent -> {
+                    if (buildServerIp.equals(agent.getIp())) {
+                        SocketIOClient agentClient = server.getClient(UUID.fromString(agent.getSessionId()));
+                        if (agentClient == null) {
+                            server.getClient(client.getSessionId()).sendEvent(EventType.ERROR_EVENT().name(), "找不到对应clientAgent: " + agent.getIp());
+                        } else {
+                            agentClient.sendEvent(EventType.BUILD().name(), new Gson().toJson(buildVo.getBuildServices()));
+                        }
+                    }
+                });
+            }
+
+        }));
+
         server.addEventListener(EventType.DEPLOY().name(), String.class, (client, data, ackRequest) -> {
             DeployVo vo = new Gson().fromJson(data, DeployVo.class);
             LOGGER.info(" server received deploy cmd" + data);
@@ -205,6 +224,7 @@ public class Main {
                 }
             });
         });
+
 
 
         server.addEventListener(EventType.STOP().name(), String.class, (client, data, ackRequest) -> {
