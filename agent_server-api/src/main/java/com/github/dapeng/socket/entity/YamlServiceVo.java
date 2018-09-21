@@ -52,6 +52,9 @@ public class YamlServiceVo {
         this.branchName = branchName;
     }
 
+    public YamlServiceVo() {
+    }
+
     @Override
     public int hashCode() {
 
