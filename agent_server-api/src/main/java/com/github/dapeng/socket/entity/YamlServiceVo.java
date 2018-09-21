@@ -1,5 +1,7 @@
 package com.github.dapeng.socket.entity;
 
+import java.util.Objects;
+
 public class YamlServiceVo {
 
     //gitURL: String, gitName: String, serviceName: String, buildOperation: String
@@ -51,24 +53,20 @@ public class YamlServiceVo {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null ) {
-            return false;
-        } else if (obj == this) {
-            return true;
-        } else if (obj instanceof YamlServiceVo) {
-            YamlServiceVo tmp = (YamlServiceVo)obj;
-            if (tmp.serviceName != null && tmp.serviceName.trim().equals(this.serviceName)
-                    && tmp.gitName != null && tmp.gitName.trim().equals(this.gitName)
-                    && tmp.branchName != null && tmp.branchName.trim().equals(this.branchName)
-                    && tmp.buildOperation != null && tmp.branchName.trim().equals(this.buildOperation)
-                    && tmp.gitURL != null && tmp.gitURL.trim().equals(this.gitURL)) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
+    public int hashCode() {
+
+        return Objects.hash(gitURL, gitName, serviceName, buildOperation, branchName);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        YamlServiceVo that = (YamlServiceVo) o;
+        return Objects.equals(gitURL, that.gitURL) &&
+                Objects.equals(gitName, that.gitName) &&
+                Objects.equals(serviceName, that.serviceName) &&
+                Objects.equals(buildOperation, that.buildOperation) &&
+                Objects.equals(branchName, that.branchName);
     }
 }
