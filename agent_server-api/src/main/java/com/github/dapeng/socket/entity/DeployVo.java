@@ -1,11 +1,32 @@
 package com.github.dapeng.socket.entity;
 
+import java.util.List;
+
+/**
+ * 升级部署传输结构体
+ */
 public class DeployVo {
 
+    /**
+     * yml文件内容
+     */
     private String fileContent;
+    /**
+     * 服务名
+     */
     private String serviceName;
+    /**
+     * 文件的最后更新时间
+     */
     private Long lastModifyTime;
+    /**
+     * 发送至哪个服务器
+     */
     private String ip;
+    /**
+     * 挂载于容器的文件内容
+     */
+    List<VolumesFile> volumesFiles;
 
     public String getIp() {
         return ip;
@@ -37,5 +58,13 @@ public class DeployVo {
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
+    }
+
+    public List<VolumesFile> getVolumesFiles() {
+        return volumesFiles;
+    }
+
+    public void setVolumesFiles(List<VolumesFile> volumesFiles) {
+        this.volumesFiles = volumesFiles;
     }
 }
