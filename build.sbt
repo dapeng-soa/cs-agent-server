@@ -6,7 +6,7 @@ resolvers += Resolver.mavenLocal
 
 lazy val commonSettings = Seq(
   organization := "com.github.dapeng",
-  version := "1.0-SNAPSHOT",
+  version := "2.0-SNAPSHOT",
   scalaVersion := "2.12.2"
 )
 
