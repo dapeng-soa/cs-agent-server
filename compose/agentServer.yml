@@ -1,0 +1,12 @@
+version: '2'
+services:
+  agentServer:
+    container_name: agentServer
+    image: docker.today36524.com.cn:5000/basic/agent-server:V2.0
+    environment:
+      socket_server_port: 6666
+    ports:
+      - 6886:6666
+    volumes:
+      - /Users/struy/Desktop/agent_server_logs:/agent_server/logs
+

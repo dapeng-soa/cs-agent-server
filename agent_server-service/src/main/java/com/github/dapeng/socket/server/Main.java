@@ -25,13 +25,21 @@ public class Main {
     private static boolean timed = false;
 
     public static void main(String[] args) {
-        String host = IPUtils.localIp();
-        int port = 6886;
+        String host = System.getenv("socket_server_host");
+        String serverPort = System.getenv("socket_server_port");
+        Integer port = Integer.valueOf(null == serverPort ? "0" : serverPort);
         if (args != null && args.length >= 2) {
             host = args[0];
             port = Integer.valueOf(args[1]);
+        } else {
+            if (null == host || "".equals(host.trim())) {
+                host = IPUtils.localIp();
+            }
+            if (port == 0) {
+                port = 6886;
+            }
         }
-        LOGGER.info("===> socket server initing :" + host + ":" + port);
+        LOGGER.info("===> socket server initing => " + host + ":" + port);
         init(host, port);
     }
 
