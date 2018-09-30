@@ -88,9 +88,11 @@ public class Main {
         server.addEventListener(EventType.WEB_REG().name(), String.class, (client, data, ackRequest) -> {
                     client.joinRoom("web");
                     LOGGER.info("web Reg..." + client.getSessionId());
+                    String s = client.getRemoteAddress().toString();
+                    String remoteIp = s.replaceFirst("/", "").substring(0, s.lastIndexOf(":") - 1);
                     String name = data.split(":")[0];
                     String ip = data.split(":")[1];
-                    webClientMap.put(client.getSessionId().toString(), new HostAgent(name, ip, client.getSessionId().toString()));
+                    webClientMap.put(client.getSessionId().toString(), new HostAgent(name, remoteIp, client.getSessionId().toString()));
                 }
 
         );
@@ -226,7 +228,6 @@ public class Main {
         });
 
 
-
         server.addEventListener(EventType.STOP().name(), String.class, (client, data, ackRequest) -> {
             DeployRequest request = new Gson().fromJson(data, DeployRequest.class);
             LOGGER.info(" server received stop cmd" + data);
@@ -252,6 +253,12 @@ public class Main {
                 }
             });
         });
+        // 获取agents列表 web -> server -> web
+        server.addEventListener(EventType.GET_REGED_AGENTS().name(), String.class, ((client, data, ackSender) -> {
+            LOGGER.info("server received getRegedAgents cmd" + data);
+            String agents = new Gson().toJson(nodesMap);
+            server.getRoomOperations("web").sendEvent(EventType.GET_REGED_AGENTS_RESP().name(), agents);
+        }));
 
         server.addEventListener(EventType.DEPLOY_RESP().name(), String.class, (client,
                                                                                data, ackRequest) -> {

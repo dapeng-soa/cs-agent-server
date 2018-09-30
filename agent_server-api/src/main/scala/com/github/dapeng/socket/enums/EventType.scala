@@ -47,6 +47,10 @@ object EventType {
 
   val BUILD = new EventType(16, "build")
 
+  val GET_REGED_AGENTS = new EventType(17,"getRegedAgents")
+
+  val GET_REGED_AGENTS_RESP = new EventType(18,"getRegedAgentsResp")
+
   val ERROR_EVENT = new EventType(99, "errorEvent")
 
   def unknown(id: Int) = new EventType(id, id + "")
@@ -69,6 +73,8 @@ object EventType {
     case 14 => GET_YAML_FILE
     case 15 => GET_YAML_FILE_RESP
     case 16 => BUILD
+    case 17 => GET_REGED_AGENTS
+    case 18 => GET_REGED_AGENTS_RESP
     case 99 => ERROR_EVENT
     case _ => unknown(id)
   }
@@ -89,6 +95,9 @@ object EventType {
     case "restartResp" => RESTART_RESP
     case "getYamlFile" => GET_YAML_FILE
     case "getYamlFileResp" => GET_YAML_FILE_RESP
+    case "build" => BUILD
+    case "getRegedAgents" => GET_REGED_AGENTS
+    case "getRegedAgentsResp" => GET_REGED_AGENTS_RESP
     case "errorEvent" => ERROR_EVENT
     case _ => unknown(label)
   }
