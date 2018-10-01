@@ -4,9 +4,11 @@ services:
     container_name: agentServer
     image: docker.today36524.com.cn:5000/basic/agent-server:V2.0
     environment:
-      socket_server_port: 6666
+      socket_server_port: 6886
     ports:
-      - 6886:6666
+      - 6886:6886
     volumes:
-      - /Users/struy/Desktop/agent_server_logs:/agent_server/logs
+      - /data/logs/agent_server:/agent_server/logs
+    labels:
+      - project.source=http://pms.today36524.td/bbliang/agent_server.git
 
