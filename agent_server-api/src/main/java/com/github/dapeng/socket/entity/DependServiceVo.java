@@ -2,7 +2,7 @@ package com.github.dapeng.socket.entity;
 
 import java.util.Objects;
 
-public class YamlServiceVo {
+public class DependServiceVo {
 
     //gitURL: String, gitName: String, serviceName: String, buildOperation: String
     private String gitURL = "";
@@ -52,7 +52,7 @@ public class YamlServiceVo {
         this.branchName = branchName;
     }
 
-    public YamlServiceVo() {
+    public DependServiceVo() {
     }
 
     @Override
@@ -65,7 +65,7 @@ public class YamlServiceVo {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        YamlServiceVo that = (YamlServiceVo) o;
+        DependServiceVo that = (DependServiceVo) o;
         return Objects.equals(gitURL, that.gitURL) &&
                 Objects.equals(gitName, that.gitName) &&
                 Objects.equals(serviceName, that.serviceName) &&

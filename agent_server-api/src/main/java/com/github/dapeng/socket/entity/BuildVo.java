@@ -7,7 +7,7 @@ public class BuildVo {
 
     private String buildServerIp;
 
-    private List<YamlServiceVo> buildServices = new ArrayList<>();
+    private List<DependServiceVo> buildServices = new ArrayList<>();
 
     public String getBuildServerIp() {
         return buildServerIp;
@@ -17,11 +17,11 @@ public class BuildVo {
         this.buildServerIp = buildServerIp;
     }
 
-    public List<YamlServiceVo> getBuildServices() {
+    public List<DependServiceVo> getBuildServices() {
         return buildServices;
     }
 
-    public void setBuildServices(List<YamlServiceVo> buildServices) {
+    public void setBuildServices(List<DependServiceVo> buildServices) {
         this.buildServices = buildServices;
     }
 }
