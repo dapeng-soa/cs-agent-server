@@ -43,7 +43,7 @@ lazy val service = (project in file("agent_server-service"))
     assembly/mainClass := Some("com.github.dapeng.socket.server.Main"),
     libraryDependencies ++= Seq(
       "org.yaml" % "snakeyaml" % "1.17",
-      "io.netty" % "netty-all" % "4.1.20.final",
+      "io.netty" % "netty-all" % "4.1.20.Final",
       "com.corundumstudio.socketio" % "netty-socketio" % "1.7.12" excludeAll("io.netty"),
       "io.socket" % "socket.io-client" % "0.8.1" excludeAll("io.netty"),
       "com.github.wangzaixiang" %% "scala-sql" % "2.0.6",
