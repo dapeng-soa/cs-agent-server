@@ -47,14 +47,17 @@ object EventType {
 
   val BUILD = new EventType(16, "build")
 
-  val GET_REGED_AGENTS = new EventType(17,"getRegedAgents")
+  val GET_REGED_AGENTS = new EventType(17, "getRegedAgents")
 
-  val GET_REGED_AGENTS_RESP = new EventType(18,"getRegedAgentsResp")
+  val GET_REGED_AGENTS_RESP = new EventType(18, "getRegedAgentsResp")
+
+  val BUILD_RESP = new EventType(19, "buildResp")
 
   val ERROR_EVENT = new EventType(99, "errorEvent")
 
   def unknown(id: Int) = new EventType(id, id + "")
-  def unknown(label: String)= new EventType(999, label)
+
+  def unknown(label: String) = new EventType(999, label)
 
   def valueOf(id: Int): EventType = id match {
     case 1 => NODE_REG
@@ -75,6 +78,7 @@ object EventType {
     case 16 => BUILD
     case 17 => GET_REGED_AGENTS
     case 18 => GET_REGED_AGENTS_RESP
+    case 19 => BUILD_RESP
     case 99 => ERROR_EVENT
     case _ => unknown(id)
   }
@@ -98,6 +102,7 @@ object EventType {
     case "build" => BUILD
     case "getRegedAgents" => GET_REGED_AGENTS
     case "getRegedAgentsResp" => GET_REGED_AGENTS_RESP
+    case "buildResp" => BUILD_RESP
     case "errorEvent" => ERROR_EVENT
     case _ => unknown(label)
   }
