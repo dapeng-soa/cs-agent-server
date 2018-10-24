@@ -24,6 +24,9 @@ public class Main {
 
     private static boolean timed = false;
 
+    private static Gson gson = new Gson();
+
+
     public static void main(String[] args) {
         String host = System.getenv("socket_server_host");
         String serverPort = System.getenv("socket_server_port");
@@ -108,7 +111,7 @@ public class Main {
         server.addEventListener(EventType.WEB_EVENT().name(), String.class, (socketIOClient, agentEvent, ackRequest) -> {
             LOGGER.info(" agentEvent: " + agentEvent);
 
-            AgentEvent agentEventObj = new Gson().fromJson(agentEvent, AgentEvent.class);
+            AgentEvent agentEventObj = gson.fromJson(agentEvent, AgentEvent.class);
             LOGGER.info(" agentEventObj: " + agentEventObj);
 
             agentEventObj.getClientSessionIds().forEach(sessionId -> {
@@ -137,7 +140,7 @@ public class Main {
         //发送指令给agent获取当前节点的部署时间
         server.addEventListener(EventType.GET_SERVER_INFO().name(), String.class, (client, data, ackRequest) -> {
                     LOGGER.info("server received serverInf cmd....." + data);
-                    List<DeployRequest> requests = new Gson().fromJson(data, new TypeToken<List<DeployRequest>>() {
+                    List<DeployRequest> requests = gson.fromJson(data, new TypeToken<List<DeployRequest>>() {
                     }.getType());
 
                     // 如有修改应当拷贝一份,定时器需要更新查询的数据
@@ -177,14 +180,14 @@ public class Main {
                     info.setStatus(status);
                     info.setTag(tag);
                     // 单个返回
-                    server.getRoomOperations("web").sendEvent(EventType.GET_SERVER_INFO_RESP().name(), new Gson().toJson(info));
+                    server.getRoomOperations("web").sendEvent(EventType.GET_SERVER_INFO_RESP().name(), gson.toJson(info));
                 }
         );
 
         server.addEventListener(EventType.GET_YAML_FILE().name(), String.class, (client,
                                                                                  data, ackRequest) -> {
             LOGGER.info(" server received getYamlFile cmd" + data);
-            DeployRequest request = new Gson().fromJson(data, DeployRequest.class);
+            DeployRequest request = gson.fromJson(data, DeployRequest.class);
             nodesMap.values().forEach(agent -> {
                 if (request.getIp().equals(agent.getIp())) {
                     SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));
@@ -203,9 +206,10 @@ public class Main {
 
         //发布构建任务
         server.addEventListener(EventType.BUILD().name(), String.class, ((client, data, ackSender) -> {
-            BuildVo buildVo = new Gson().fromJson(data, BuildVo.class);
+            BuildVo buildVo = gson.fromJson(data, BuildVo.class);
+
             String buildServerIp = buildVo.getBuildServerIp();
-            if (buildServerIp == null && buildServerIp.isEmpty()) {
+            if (buildServerIp == null || buildServerIp.isEmpty()) {
                 server.getClient(client.getSessionId()).sendEvent(EventType.ERROR_EVENT().name(), "构建服务器的IP不能为空");
             } else {
                 nodesMap.values().forEach(agent -> {
@@ -214,7 +218,7 @@ public class Main {
                         if (agentClient == null) {
                             server.getClient(client.getSessionId()).sendEvent(EventType.ERROR_EVENT().name(), "找不到对应clientAgent: " + agent.getIp());
                         } else {
-                            agentClient.sendEvent(EventType.BUILD().name(), new Gson().toJson(buildVo.getBuildServices()));
+                            agentClient.sendEvent(EventType.BUILD().name(), gson.toJson(buildVo.getBuildServices()));
                         }
                     }
                 });
@@ -222,8 +226,13 @@ public class Main {
 
         }));
 
+        server.addEventListener(EventType.BUILD_RESP().name(), String.class, (client, data, ackRequest) -> {
+            LOGGER.info(" server received buildResp cmd" + data);
+            server.getRoomOperations("web").sendEvent(EventType.BUILD_RESP().name(), data);
+        });
+
         server.addEventListener(EventType.DEPLOY().name(), String.class, (client, data, ackRequest) -> {
-            DeployVo vo = new Gson().fromJson(data, DeployVo.class);
+            DeployVo vo = gson.fromJson(data, DeployVo.class);
             LOGGER.info(" server received deploy cmd" + data);
             nodesMap.values().forEach(agent -> {
                 if (vo.getIp().equals(agent.getIp())) {
@@ -237,7 +246,7 @@ public class Main {
 
 
         server.addEventListener(EventType.STOP().name(), String.class, (client, data, ackRequest) -> {
-            DeployRequest request = new Gson().fromJson(data, DeployRequest.class);
+            DeployRequest request = gson.fromJson(data, DeployRequest.class);
             LOGGER.info(" server received stop cmd" + data);
             nodesMap.values().forEach(agent -> {
                 if (request.getIp().equals(agent.getIp())) {
@@ -250,7 +259,7 @@ public class Main {
         });
 
         server.addEventListener(EventType.RESTART().name(), String.class, (client, data, ackRequest) -> {
-            DeployRequest request = new Gson().fromJson(data, DeployRequest.class);
+            DeployRequest request = gson.fromJson(data, DeployRequest.class);
             LOGGER.info(" server received restart cmd" + data);
             nodesMap.values().forEach(agent -> {
                 if (request.getIp().equals(agent.getIp())) {
@@ -264,7 +273,7 @@ public class Main {
         // 获取agents列表 web -> server -> web
         server.addEventListener(EventType.GET_REGED_AGENTS().name(), String.class, ((client, data, ackSender) -> {
             LOGGER.info("server received getRegedAgents cmd" + data);
-            String agents = new Gson().toJson(nodesMap);
+            String agents = gson.toJson(nodesMap);
             server.getRoomOperations("web").sendEvent(EventType.GET_REGED_AGENTS_RESP().name(), agents);
         }));
 
@@ -311,7 +320,7 @@ public class Main {
                 if (request.getIp().equals(agent.getIp())) {
                     SocketIOClient targetAgent = server.getClient(UUID.fromString(agent.getSessionId()));
                     if (targetAgent != null) {
-                        targetAgent.sendEvent(EventType.GET_SERVER_INFO().name(), new Gson().toJson(request));
+                        targetAgent.sendEvent(EventType.GET_SERVER_INFO().name(), gson.toJson(request));
                     }
                 }
             });

@@ -1,13 +1,12 @@
 package com.github.dapeng.socket.entity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class BuildVo {
 
     private String buildServerIp;
 
-    private List<DependServiceVo> buildServices = new ArrayList<>();
+    private List<DependServiceVo> buildServices;
 
     public String getBuildServerIp() {
         return buildServerIp;
