@@ -53,6 +53,8 @@ object EventType {
 
   val BUILD_RESP = new EventType(19, "buildResp")
 
+  val BUILDING = new EventType(20, "building")
+
   val ERROR_EVENT = new EventType(99, "errorEvent")
 
   def unknown(id: Int) = new EventType(id, id + "")

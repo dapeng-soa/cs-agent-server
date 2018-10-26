@@ -44,10 +44,18 @@ lazy val service = (project in file("agent_server-service"))
     libraryDependencies ++= Seq(
       "org.yaml" % "snakeyaml" % "1.17",
       "io.netty" % "netty-all" % "4.1.20.Final",
+      "com.github.wangzaixiang" %% "scala-sql" % "2.0.6",
       "com.corundumstudio.socketio" % "netty-socketio" % "1.7.12" excludeAll("io.netty"),
       "io.socket" % "socket.io-client" % "0.8.1" excludeAll("io.netty"),
       "com.github.wangzaixiang" %% "scala-sql" % "2.0.6",
-      "com.google.code.gson" % "gson" % "2.3.1"
+      "com.google.code.gson" % "gson" % "2.3.1",
+      "org.springframework" % "spring-context" % "4.3.5.RELEASE",
+      "org.springframework" % "spring-tx" % "4.3.5.RELEASE",
+      "org.springframework" % "spring-jdbc" % "4.3.5.RELEASE",
+      "org.springframework" % "spring-core" % "4.3.5.RELEASE",
+      "mysql" % "mysql-connector-java" % "5.1.36",
+      "org.slf4j" % "slf4j-api" % "1.7.13",
+      "com.alibaba" % "druid" % "1.0.17"
     ))
 
 

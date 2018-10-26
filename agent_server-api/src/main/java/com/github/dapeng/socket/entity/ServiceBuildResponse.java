@@ -1,20 +1,13 @@
 package com.github.dapeng.socket.entity;
 
-import java.util.List;
-
-public class BuildVo {
-
+public class ServiceBuildResponse {
 
     private long id;
     private String agentHost;
     private String buildService;
     private long taskId;
-
-//    private int status;
-//    private String content;
-
-
-    private List<DependServiceVo> buildServices;
+    private int status;
+    private StringBuilder content;
 
     public long getId() {
         return id;
@@ -48,11 +41,19 @@ public class BuildVo {
         this.taskId = taskId;
     }
 
-    public List<DependServiceVo> getBuildServices() {
-        return buildServices;
+    public int getStatus() {
+        return status;
     }
 
-    public void setBuildServices(List<DependServiceVo> buildServices) {
-        this.buildServices = buildServices;
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public StringBuilder getContent() {
+        return content;
+    }
+
+    public void setContent(StringBuilder content) {
+        this.content = content;
     }
 }
