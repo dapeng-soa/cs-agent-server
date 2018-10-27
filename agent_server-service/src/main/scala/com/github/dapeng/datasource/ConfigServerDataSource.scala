@@ -10,7 +10,7 @@ object ConfigServerDataSource {
 
 class ConfigServerDataSource {
 
-  @Resource(name = "tx_order_dataSource")
+  @Resource(name = "configServer_dataSource")
   def setMysqlData(mysqlData: DataSource): Unit = {
     ConfigServerDataSource.mysqlData = mysqlData
   }

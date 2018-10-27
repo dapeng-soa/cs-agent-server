@@ -8,6 +8,15 @@ public class ServiceBuildResponse {
     private long taskId;
     private int status;
     private StringBuilder content;
+    private int buildServiceSize;
+
+    public int getBuildServiceSize() {
+        return buildServiceSize;
+    }
+
+    public void setBuildServiceSize(int buildServiceSize) {
+        this.buildServiceSize = buildServiceSize;
+    }
 
     public long getId() {
         return id;

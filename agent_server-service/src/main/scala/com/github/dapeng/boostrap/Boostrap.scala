@@ -1,22 +1,23 @@
 package com.github.dapeng.boostrap
 
 import java.util
-import java.util.{ArrayList, List, Map, UUID}
+import java.util.UUID
 import java.util.concurrent._
 
 import com.corundumstudio.socketio.{AckRequest, Configuration, SocketIOClient, SocketIOServer}
 import com.github.dapeng.datasource.ConfigServerSql
-import com.github.dapeng.socket.{AgentEvent, HostAgent}
+import com.github.dapeng.entity.TServiceBuildRecord
 import com.github.dapeng.socket.entity._
 import com.github.dapeng.socket.enums.EventType
-import com.github.dapeng.socket.server.{CmdExecutor}
+import com.github.dapeng.socket.server.CmdExecutor
 import com.github.dapeng.socket.util.IPUtils
+import com.github.dapeng.socket.{AgentEvent, HostAgent}
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.LoggerFactory
 import org.springframework.context.support.ClassPathXmlApplicationContext
 
-import collection.JavaConverters._
+import scala.collection.JavaConverters._
 
 object Boostrap {
 
@@ -34,7 +35,7 @@ object Boostrap {
 
   private val queue = new LinkedBlockingQueue[Any]
 
-  private val buildCache = new ConcurrentHashMap[String, ServiceBuildResponse]
+  private val buildCache = new ConcurrentHashMap[String, (Int, ServiceBuildResponse)]
 
   def main(args: Array[String]): Unit = {
     val ac = new ClassPathXmlApplicationContext("classpath:services.xml");
@@ -43,12 +44,12 @@ object Boostrap {
     val (host, port) = if (args != null && args.length >= 2) {
       (args(0), Integer.valueOf(args(1)))
     } else {
-      val host = System.getenv("socket_server_host");
-      val serverPort = System.getenv("socket_server_port");
+      val host = System.getenv("socket_server_host")
+      val serverPort = System.getenv("socket_server_port")
 
       (
-        if (host == null | host.isEmpty) IPUtils.localIp else host,
-        if (serverPort == null | serverPort.isEmpty) Integer.valueOf(6886) else Integer.valueOf(serverPort)
+        if (host == null || host.isEmpty) IPUtils.localIp else host,
+        if (serverPort == null || serverPort.isEmpty) Integer.valueOf(6886) else Integer.valueOf(serverPort)
       )
     }
 
@@ -61,7 +62,7 @@ object Boostrap {
     config.setHostname(hostName)
     config.setAllowCustomRequests(true)
 
-    val server =  new SocketIOServer(config)
+    val server = new SocketIOServer(config)
 
     server.addConnectListener((socketIOClient: SocketIOClient) => LOGGER.info(String.format(socketIOClient.getRemoteAddress + " --> join room %s", socketIOClient.getSessionId)))
 
@@ -83,7 +84,7 @@ object Boostrap {
       handleGetServerInfoEvent(client, server, data)
     })
     server.addEventListener(EventType.GET_YAML_FILE.name, classOf[String], (_, data: String, _) => {
-      handleGetYmlFileEvent(server,data)
+      handleGetYmlFileEvent(server, data)
     })
     server.addEventListener(EventType.BUILD.name, classOf[String], (client: SocketIOClient, data: String, _) => {
       LOGGER.info(" start to build server info...data: " + data)
@@ -93,7 +94,7 @@ object Boostrap {
       handleDeployEvent(server, data)
     })
     server.addEventListener(EventType.STOP.name, classOf[String], (_, data: String, _) => {
-       handleStopEvent(server, data)
+      handleStopEvent(server, data)
     })
     server.addEventListener(EventType.RESTART.name, classOf[String], (_, data: String, _) => {
       handleRestartEvent(server, data)
@@ -102,7 +103,7 @@ object Boostrap {
 
 
     /*-----------发送给web 的事件 start------------------*/
-    server.addEventListener(EventType.NODE_EVENT.name, classOf[String], (_, agentEvent: String,_) => {
+    server.addEventListener(EventType.NODE_EVENT.name, classOf[String], (_, agentEvent: String, _) => {
       server.getRoomOperations("web").sendEvent(EventType.NODE_EVENT.name, agentEvent)
     })
     server.addEventListener(EventType.ERROR_EVENT.name, classOf[String], (_, agentEvent: String, _) => {
@@ -112,19 +113,23 @@ object Boostrap {
       server.getRoomOperations("web").sendEvent(EventType.GET_REGED_AGENTS_RESP.name, gson.toJson(nodesMap))
     })
     server.addEventListener(EventType.BUILD_RESP.name, classOf[String], (client: SocketIOClient, data: String, _) => {
-      handleBuildResponseEvent(client, server,data)
+      handleBuildResponseEvent(client, server, data)
+    })
+
+    server.addEventListener(EventType.GET_BUILD_PROGRESSIVE.name, classOf[String], (client: SocketIOClient, data: String, _) => {
+      handleGetBuildProgressiveEvent(client, server, data)
     })
     server.addEventListener(EventType.DEPLOY_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
-        LOGGER.info(" server received deployResp cmd" + data)
-        server.getRoomOperations("web").sendEvent(EventType.DEPLOY_RESP.name, data)
+      LOGGER.info(" server received deployResp cmd" + data)
+      server.getRoomOperations("web").sendEvent(EventType.DEPLOY_RESP.name, data)
     })
     server.addEventListener(EventType.STOP_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
-        LOGGER.info(" server received stopResp cmd" + data)
-        server.getRoomOperations("web").sendEvent(EventType.STOP_RESP.name, data)
+      LOGGER.info(" server received stopResp cmd" + data)
+      server.getRoomOperations("web").sendEvent(EventType.STOP_RESP.name, data)
     })
     server.addEventListener(EventType.RESTART_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
-        LOGGER.info(" server received restartResp cmd" + data)
-        server.getRoomOperations("web").sendEvent(EventType.RESTART_RESP.name, data)
+      LOGGER.info(" server received restartResp cmd" + data)
+      server.getRoomOperations("web").sendEvent(EventType.RESTART_RESP.name, data)
     })
     server.addEventListener(EventType.GET_YAML_FILE_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
       LOGGER.info(" server received getYamlFileResp cmd" + data)
@@ -175,7 +180,7 @@ object Boostrap {
     })
   }
 
-  private def handleDeployEvent(server: SocketIOServer, data: String ) =  {
+  private def handleDeployEvent(server: SocketIOServer, data: String) = {
     val vo = gson.fromJson(data, classOf[DeployVo])
     LOGGER.info(" server received deploy cmd" + data)
     nodesMap.values.forEach((agent: HostAgent) => {
@@ -189,16 +194,60 @@ object Boostrap {
   private def handleBuildResponseEvent(client: SocketIOClient, server: SocketIOServer, data: String) = {
     LOGGER.info(" server received buildResp cmd" + data)
     val agent = nodesMap.get(client.getSessionId.toString)
-    val response = buildCache.get(agent.getIp)
-    response.getContent.append(data)
+    val responseTuple = buildCache.get(agent.getIp)
+    val response = responseTuple._2
+    response.getContent.append(data + "\r\n")
+
+    server.getRoomOperations("web").sendEvent(EventType.BUILD_RESP.name, data)
     //TODO: if build done , update TServiceBuildRecord
-    if (data == "BUILD_END") { //fixme 1. updateRecord 消除魔法数字
-      ConfigServerSql.updateBuildServiceRecordStatus(response.getId, 2)
-      ConfigServerSql.updateBuildServiceRecordContent(response.getId, response.getContent.toString)
-      //2. clearBuildCache
-      buildCache.remove(agent.getIp)
+    if (data.contains("BUILD_END")) { //fixme 1. updateRecord 消除魔法数字
+      val counter = responseTuple._1 + 1
+      if (counter == response.getBuildServiceSize) {
+        ConfigServerSql.updateBuildServiceRecordStatus(response.getId, 2)
+        ConfigServerSql.updateBuildServiceRecordContent(response.getId, response.getContent.toString)
+        //2. clearBuildCache
+        buildCache.remove(agent.getIp)
+      } else {
+        buildCache.put(agent.getIp, (counter, response))
+      }
+
     }
     server.getRoomOperations("web").sendEvent(EventType.BUILD_RESP.name, data)
+  }
+
+  private def handleGetBuildProgressiveEvent(client: SocketIOClient, server: SocketIOServer, data: String): Unit = {
+    LOGGER.info(" server received getBuildProgressive cmd" + data)
+    /**
+      * 日志的返回逻辑
+      * 1.传递记录id，如果状态是已完成的则直接查询数据库将其全量返回
+      * 1.1如果传递的id所在的记录状态为初始化或者构建中则返回缓存中的服务构建日志
+      * 2.时间参数除去id之外还需要传递当前控制台的字符数，初始传递0券量获取
+      */
+    val vo: ProgressiveVo = gson.fromJson(data, classOf[ProgressiveVo])
+    val maybeRecord: Option[TServiceBuildRecord] = ConfigServerSql.getBuildServiceRecordById(vo.getId)
+    val respose = maybeRecord match {
+      case Some(x) => {
+        // 构建中则从内存中获取,但需要判断start字段
+        if (x.status == 0 || x.status == 1) {
+          //
+          val agent = nodesMap.get(client.getSessionId.toString)
+          val responseTuple = buildCache.get(agent.getIp)
+          val response = responseTuple._2
+          // 再次确认一下存不存在，不行旧丢弃掉
+          if (response.getId == vo.getId) {
+            response.getContent.substring(vo.getStart)
+          } else {
+            "notFound buildRecord"
+          }
+        } else {
+          // 构建完成直接返回数据库全量的log
+          // fixme 是否这类情况告知不要轮训
+          x.buildLog.substring(vo.getStart)
+        }
+      }
+      case _ => "notFound buildRecord"
+    }
+    server.getRoomOperations("web").sendEvent(EventType.GET_BUILD_PROGRESSIVE_RESP.name, respose)
   }
 
   private def handleGetYmlFileEvent(server: SocketIOServer, data: String) = {
@@ -232,7 +281,7 @@ object Boostrap {
     server.getRoomOperations("web").sendEvent(EventType.GET_SERVER_INFO_RESP.name, gson.toJson(info))
   }
 
-  private def handleGetServerInfoEvent(client: SocketIOClient,server: SocketIOServer, data: String) = {
+  private def handleGetServerInfoEvent(client: SocketIOClient, server: SocketIOServer, data: String) = {
     LOGGER.info("server received serverInf cmd....." + data)
     val requests = gson.fromJson(data, new TypeToken[util.List[DeployRequest]]() {}.getType)
     // 如有修改应当拷贝一份,定时器需要更新查询的数据
@@ -283,7 +332,6 @@ object Boostrap {
     val ip = data.split(":")(1)
     nodesMap.put(client.getSessionId.toString, new HostAgent(name, ip, client.getSessionId.toString))
   }
-
 
 
   private def handleDisconnectEvent(socketIOClient: SocketIOClient, server: SocketIOServer): Unit = {
@@ -342,7 +390,7 @@ object Boostrap {
       //                    .append(buildVo.getId());
       sb.append(buildVo.getAgentHost)
       val response = toServiceBuildResponse(buildVo)
-      buildCache.put(sb.toString, response)
+      buildCache.put(sb.toString, (0, response))
       //fixme, 消除魔法数字
       ConfigServerSql.updateBuildServiceRecordStatus(buildVo.getId, 1)
       val buildServerIp = buildVo.getAgentHost
@@ -366,6 +414,7 @@ object Boostrap {
     response.setContent(new java.lang.StringBuilder())
     response.setStatus(1)
     response.setTaskId(buildVo.getTaskId)
+    response.setBuildServiceSize(buildVo.getBuildServices.size())
     response
   }
 }

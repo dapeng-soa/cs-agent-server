@@ -55,6 +55,12 @@ object EventType {
 
   val BUILDING = new EventType(20, "building")
 
+  val BUILDING_LIST = new EventType(21, "buildingList")
+
+  val GET_BUILD_PROGRESSIVE = new EventType(22, "getBuildProgressive")
+
+  val GET_BUILD_PROGRESSIVE_RESP = new EventType(23, "getBuildProgressiveResp")
+
   val ERROR_EVENT = new EventType(99, "errorEvent")
 
   def unknown(id: Int) = new EventType(id, id + "")
@@ -81,6 +87,10 @@ object EventType {
     case 17 => GET_REGED_AGENTS
     case 18 => GET_REGED_AGENTS_RESP
     case 19 => BUILD_RESP
+    case 20 => BUILDING
+    case 21 => BUILDING_LIST
+    case 22 => GET_BUILD_PROGRESSIVE
+    case 23 => GET_BUILD_PROGRESSIVE_RESP
     case 99 => ERROR_EVENT
     case _ => unknown(id)
   }
@@ -105,6 +115,10 @@ object EventType {
     case "getRegedAgents" => GET_REGED_AGENTS
     case "getRegedAgentsResp" => GET_REGED_AGENTS_RESP
     case "buildResp" => BUILD_RESP
+    case "building" => BUILDING
+    case "buildingList" => BUILDING_LIST
+    case "getBuildProgressive" => GET_BUILD_PROGRESSIVE
+    case "getBuildProgressiveResp" => GET_BUILD_PROGRESSIVE_RESP
     case "errorEvent" => ERROR_EVENT
     case _ => unknown(label)
   }

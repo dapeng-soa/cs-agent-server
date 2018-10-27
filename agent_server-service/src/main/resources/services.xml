@@ -78,6 +78,8 @@
         <property name="dataSource" ref="configServer_dataSource"/>
     </bean>
 
+
+
     <!-- 开启事务控制的注解支持 -->
     <tx:annotation-driven/>
 
