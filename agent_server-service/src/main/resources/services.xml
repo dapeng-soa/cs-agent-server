@@ -10,7 +10,7 @@
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
     <!--参数配置-->
-    <context:property-placeholder location="classpath:config_order.properties" local-override="false"
+    <context:property-placeholder location="classpath:config_server.properties" local-override="false"
                                   system-properties-mode="ENVIRONMENT"/>
 
     <context:component-scan base-package="com.github.dapeng.*"/>
@@ -31,9 +31,9 @@
     <bean id="configServer_dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
           destroy-method="close">
         <!-- 基本属性 url、user、password -->
-        <property name="url" value="${DB_ORDER_URL}"/>
-        <property name="username" value="${DB_ORDER_USER}"/>
-        <property name="password" value="${DB_ORDER_PASSWD}"/>
+        <property name="url" value="${DB_CONFIG_SERVER_URL}"/>
+        <property name="username" value="${DB_CONFIG_SERVER_USER}"/>
+        <property name="password" value="${DB_CONFIG_SERVER_PASSWD}"/>
 
         <!-- 配置初始化大小、最小、最大 -->
         <property name="initialSize" value="1"/>
