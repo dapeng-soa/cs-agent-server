@@ -5,6 +5,9 @@ services:
     image: docker.today36524.com.cn:5000/basic/agent-server:V2.0
     environment:
       socket_server_port: 6886
+      DB_CONFIG_SERVER_URL: jdbc:mysql://127.0.0.1:3306/config_server_db?useUnicode=true&zeroDateTimeBehavior=convertToNull
+      DB_CONFIG_SERVER_USER: root
+      DB_CONFIG_SERVER_PASSWD: today-36524
     ports:
       - 6886:6886
     volumes:
