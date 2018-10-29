@@ -379,8 +379,11 @@ object Boostrap {
     * @param data
     */
   private def handleBuildEvent(client: SocketIOClient, server: SocketIOServer, data: String): Unit = {
+    LOGGER.info(s" received build event, data: $data")
+    LOGGER.info(s" current buildCache....${buildCache.keys()}")
     val buildVo = gson.fromJson(data, classOf[BuildVo])
-    if (!buildCache.isEmpty) client.sendEvent(EventType.BUILDING.name, "服务正在构建中, 请稍等........")
+
+    if (!buildCache.isEmpty && buildCache.contains(buildVo.getAgentHost)) client.sendEvent(EventType.BUILDING.name, "服务正在构建中, 请稍等........")
     else {
       val sb = new StringBuilder(64)
       //            sb.append(buildVo.getAgentHost()).append(":")
