@@ -51,6 +51,8 @@ lazy val service = (project in file("agent_server-service"))
       "org.springframework" % "spring-core" % "4.3.5.RELEASE",
       "mysql" % "mysql-connector-java" % "5.1.36",
       "org.slf4j" % "slf4j-api" % "1.7.13" ,
+      "ch.qos.logback" % "logback-classic" % "1.1.3",
+      "ch.qos.logback" % "logback-core" % "1.1.3",
       "com.alibaba" % "druid" % "1.0.17" excludeAll("commons-logging")
     ))
 
