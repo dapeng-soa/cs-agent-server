@@ -230,8 +230,7 @@ object Boostrap {
         // 构建中则从内存中获取,但需要判断start字段
         if (x.status == 0 || x.status == 1) {
           //
-          val agent = nodesMap.get(client.getSessionId.toString)
-          val responseTuple = buildCache.get(agent.getIp)
+          val responseTuple = buildCache.get(x.agentHost)
           val response = responseTuple._2
           // 再次确认一下存不存在，不行旧丢弃掉
           if (response.getId == vo.getId) {
