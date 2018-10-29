@@ -229,14 +229,14 @@ object Boostrap {
       case Some(x) => {
         // 构建中则从内存中获取,但需要判断start字段
         if (x.status == 0 || x.status == 1) {
-          //
+          LOGGER.info(s" current progress buildCache. ${buildCache.keys()}")
           val responseTuple = buildCache.get(x.agentHost)
           val response = responseTuple._2
           // 再次确认一下存不存在，不行旧丢弃掉
           if (response.getId == vo.getId) {
             response.getContent.substring(vo.getStart)
           } else {
-            "notFound buildRecord"
+            "notBuildCacheFound buildRecord"
           }
         } else {
           // 构建完成直接返回数据库全量的log
@@ -244,7 +244,7 @@ object Boostrap {
           x.buildLog.substring(vo.getStart)
         }
       }
-      case _ => "notFound buildRecord"
+      case _ => "not records Found buildRecord"
     }
     server.getRoomOperations("web").sendEvent(EventType.GET_BUILD_PROGRESSIVE_RESP.name, respose)
   }
