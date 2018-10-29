@@ -228,8 +228,10 @@ object Boostrap {
     val respose = maybeRecord match {
       case Some(x) => {
         // 构建中则从内存中获取,但需要判断start字段
-        if (x.status == 0 || x.status == 1) {
-          LOGGER.info(s" current progress buildCache. ${buildCache.keys()}")
+        if (x.status == 0) {
+          "waiting for build"
+        } else if (x.status == 1) {
+          LOGGER.info(s" current progress buildCache. ${buildCache.asScala.keys}")
           val responseTuple = buildCache.get(x.agentHost)
           val response = responseTuple._2
           // 再次确认一下存不存在，不行旧丢弃掉
@@ -380,7 +382,7 @@ object Boostrap {
     */
   private def handleBuildEvent(client: SocketIOClient, server: SocketIOServer, data: String): Unit = {
     LOGGER.info(s" received build event, data: $data")
-    LOGGER.info(s" current buildCache....${buildCache.keys()}")
+    LOGGER.info(s" current buildCache....${buildCache.asScala.keys}")
     val buildVo = gson.fromJson(data, classOf[BuildVo])
 
     if (!buildCache.isEmpty && buildCache.contains(buildVo.getAgentHost)) client.sendEvent(EventType.BUILDING.name, "服务正在构建中, 请稍等........")
