@@ -40,7 +40,7 @@ lazy val service = (project in file("agent_server-service"))
   .settings(
     commonSettings,
     name := "agent_server_service",
-    assembly/mainClass := Some("com.github.dapeng.socket.server.Main"),
+    assembly/mainClass := Some("com.github.dapeng.boostrap.Boostrap"),
     libraryDependencies ++= Seq(
       "org.yaml" % "snakeyaml" % "1.17",
       "io.netty" % "netty-all" % "4.1.20.Final",
