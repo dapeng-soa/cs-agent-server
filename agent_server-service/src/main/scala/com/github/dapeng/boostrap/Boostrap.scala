@@ -283,7 +283,7 @@ object Boostrap {
   }
 
   private def handleGetServerInfoEvent(client: SocketIOClient, server: SocketIOServer, data: String) = {
-    LOGGER.info("server received serverInf cmd....." + data)
+    LOGGER.debug("server received serverInf cmd....." + data)
     val requests = gson.fromJson(data, new TypeToken[util.List[DeployRequest]]() {}.getType)
     // 如有修改应当拷贝一份,定时器需要更新查询的数据
     // fixme 将不同客户端发送的服务都问询一遍,需要去重复，拿并集
@@ -291,16 +291,12 @@ object Boostrap {
     // 定时发送所有的服务状态检查，但需要做状态判断，只能启动一次定时器
     if (!timed) {
       timer.scheduleAtFixedRate(() => {
-        def foo() = {
-          LOGGER.info(":::timing send getServiceInfo runing")
-          sendGetServiceInfo(nodesMap, server)
-        }
-
-        foo()
+        LOGGER.debug(":::timing send getServiceInfo runing")
+        sendGetServiceInfo(nodesMap, server)
       }, 0, 10000, TimeUnit.MILLISECONDS)
       timed = true
     }
-    else LOGGER.info(":::warn getServiceInfo  is Timing ,skip")
+    else LOGGER.debug(":::warn getServiceInfo  is Timing ,skip")
     // 当再次发起调用需要即时发送检查
     sendGetServiceInfo(nodesMap, server)
   }
