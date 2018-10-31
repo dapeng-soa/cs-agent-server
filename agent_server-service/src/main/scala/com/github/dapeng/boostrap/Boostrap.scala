@@ -201,9 +201,10 @@ object Boostrap {
     server.getRoomOperations("web").sendEvent(EventType.BUILD_RESP.name, data)
     //TODO: if build done , update TServiceBuildRecord
     if (data.contains("BUILD_END")) { //fixme 1. updateRecord 消除魔法数字
+      val buildStatus = data.split(":")(1).toInt
       val counter = responseTuple._1 + 1
       if (counter == response.getBuildServiceSize) {
-        ConfigServerSql.updateBuildServiceRecordStatus(response.getId, 2)
+        ConfigServerSql.updateBuildServiceRecordStatus(response.getId, if (buildStatus == 0) 2 else 3)
         ConfigServerSql.updateBuildServiceRecordContent(response.getId, response.getContent.toString)
         //2. clearBuildCache
         buildCache.remove(agent.getIp)
