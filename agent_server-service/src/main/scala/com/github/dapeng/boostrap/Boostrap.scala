@@ -205,8 +205,8 @@ object Boostrap {
       val buildStatus = data.split(":")(1).toInt
       val counter = responseTuple._1 + 1
       if (counter == response.getBuildServiceSize) {
-        ConfigServerSql.updateBuildServiceRecordStatus(response.getId, if (buildStatus == 0) 2 else 3)
-        ConfigServerSql.updateBuildServiceRecordContent(response.getId, response.getContent.toString)
+        LOGGER.info(s" service has built done.. buildId: ${response.getId}, status: ${buildStatus}, responseSize: ${response.getContent.toString.length}")
+        ConfigServerSql.updateBuildServiceRecord(response.getId, if (buildStatus == 0) 2 else 3, response.getContent.toString)
         //2. clearBuildCache
         buildCache.remove(agent.getIp)
       } else {
@@ -410,7 +410,7 @@ object Boostrap {
       val response = toServiceBuildResponse(buildVo)
       buildCache.put(sb.toString, (0, response))
       //fixme, 消除魔法数字
-      ConfigServerSql.updateBuildServiceRecordStatus(buildVo.getId, 1)
+      ConfigServerSql.updateBuildServiceRecord(buildVo.getId, 1, "")
       val buildServerIp = buildVo.getAgentHost
       if (buildServerIp == null || buildServerIp.isEmpty) {
         server.getClient(client.getSessionId).sendEvent(EventType.ERROR_EVENT.name, "构建服务器的IP不能为空")

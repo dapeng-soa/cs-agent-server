@@ -11,11 +11,11 @@ object ConfigServerSql {
     mysqlData.row[TServiceBuildRecord](sql"select * from t_service_build_records where id = ${id}")
   }
 
-  def updateBuildServiceRecordStatus(id: Long, status: Int) = {
-    mysqlData.executeUpdate(sql" update t_service_build_records set status = ${status} where id = ${id} ")
+  def updateBuildServiceRecord(id: Long, status: Int, content: String) = {
+    mysqlData.executeUpdate(sql" update t_service_build_records set status = ${status},  build_log = ${content} where id = ${id} ")
   }
 
-  def updateBuildServiceRecordContent(id: Long, content: String) = {
-    mysqlData.executeUpdate(sql" update t_service_build_records set build_log = ${content} where id = ${id} ")
-  }
+//  def updateBuildServiceRecordContent(id: Long, content: String) = {
+//    mysqlData.executeUpdate(sql" update t_service_build_records set build_log = ${content} where id = ${id} ")
+//  }
 }
