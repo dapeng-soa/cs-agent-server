@@ -203,7 +203,7 @@ object Boostrap {
     if (data.contains("BUILD_END")) { //fixme 1. updateRecord 消除魔法数字
 
       val buildStatus = data.split(":")(1).toInt
-      LOGGER.info(s" service has built done.. buildId: ${response.getId}, status: ${buildStatus}, responseSize: ${response.getContent.toString.length}, counter: ${counter}")
+      LOGGER.info(s" service has built done.. buildId: ${response.getId}, status: ${buildStatus}, responseSize: ${response.getContent.toString.length}, counter: ${responseTuple._1}")
       if (responseTuple._1 + 1 == response.getBuildServiceSize) {
 
         ConfigServerSql.updateBuildServiceRecord(response.getId, if (buildStatus == 0) 2 else 3, response.getContent.toString)
