@@ -16,6 +16,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.slf4j.LoggerFactory
 import org.springframework.context.support.ClassPathXmlApplicationContext
+import wangzx.scala_commons.sql.BeanBuilder
 
 import scala.collection.JavaConverters._
 
@@ -229,7 +230,7 @@ object Boostrap {
     val respose = maybeRecord match {
       case Some(x) => {
         // 构建中则从内存中获取,但需要判断start字段
-        if (x.status == 0) {
+        val logs= if (x.status == 0) {
           "waiting for build"
         } else if (x.status == 1) {
           LOGGER.info(s" current progress buildCache. ${buildCache.asScala.keys}")
@@ -246,10 +247,18 @@ object Boostrap {
           // fixme 是否这类情况告知不要轮训
           x.buildLog.substring(vo.getStart)
         }
+        BeanBuilder.build[TServiceBuildRecords](TServiceBuildRecord)(
+          "buildLog" -> logs
+        )
       }
-      case _ => "not records Found buildRecord"
+
+      case _ =>
+        val record = new TServiceBuildRecords()
+        record.setBuildLog("not records Found buildRecord")
+        record
     }
-    server.getRoomOperations("web").sendEvent(EventType.GET_BUILD_PROGRESSIVE_RESP.name, respose)
+
+    server.getRoomOperations("web").sendEvent(EventType.GET_BUILD_PROGRESSIVE_RESP.name, gson.toJson(respose))
   }
 
   private def handleGetYmlFileEvent(server: SocketIOServer, data: String) = {
