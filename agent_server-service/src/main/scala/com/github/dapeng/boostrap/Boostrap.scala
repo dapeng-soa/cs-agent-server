@@ -284,7 +284,7 @@ object Boostrap {
 
   private def handleGetServerInfoEvent(client: SocketIOClient, server: SocketIOServer, data: String) = {
     LOGGER.debug("server received serverInf cmd....." + data)
-    val requests = gson.fromJson(data, new TypeToken[util.List[DeployRequest]]() {}.getType)
+    val requests:util.ArrayList[DeployRequest]  = gson.fromJson(data, new TypeToken[util.List[DeployRequest]]() {}.getType)
     // 如有修改应当拷贝一份,定时器需要更新查询的数据
     // fixme 将不同客户端发送的服务都问询一遍,需要去重复，拿并集
     services = requests
