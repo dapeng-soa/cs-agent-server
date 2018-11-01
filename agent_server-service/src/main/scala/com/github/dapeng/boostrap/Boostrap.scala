@@ -247,9 +247,17 @@ object Boostrap {
           // fixme 是否这类情况告知不要轮训
           x.buildLog.substring(vo.getStart)
         }
-        BeanBuilder.build[TServiceBuildRecords](TServiceBuildRecord)(
-          "buildLog" -> logs
-        )
+        val record = new TServiceBuildRecords()
+        record.setAgentHost(maybeRecord.get.agentHost)
+        record.setBuildLog(logs)
+        record.setBuildService(maybeRecord.get.buildService)
+        record.setCreatedAt(maybeRecord.get.createdAt)
+        record.setCreatedBy(maybeRecord.get.createdBy)
+        record.setId(maybeRecord.get.id)
+        record.setStatus(maybeRecord.get.status)
+        record.setTaskId(maybeRecord.get.taskId)
+        record.setUpdatedAt(maybeRecord.get.updatedAt)
+        record
       }
 
       case _ =>
