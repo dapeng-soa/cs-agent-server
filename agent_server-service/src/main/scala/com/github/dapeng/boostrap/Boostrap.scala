@@ -133,7 +133,7 @@ object Boostrap {
       server.getRoomOperations("web").sendEvent(EventType.RESTART_RESP.name, data)
     })
     server.addEventListener(EventType.GET_YAML_FILE_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
-      LOGGER.info(" server received getYamlFileResp cmd" + data)
+      LOGGER.debug(" server received getYamlFileResp cmd" + data)
       server.getRoomOperations("web").sendEvent(EventType.GET_YAML_FILE_RESP.name, data)
     })
     server.addEventListener(EventType.GET_SERVER_INFO_RESP.name, classOf[String], (_, data: String, _) => {
@@ -273,7 +273,7 @@ object Boostrap {
   }
 
   private def handleGetServerInfoResponseEvent(server: SocketIOServer, data: String) = {
-    LOGGER.info(" received getServerInfoResp cmd..." + data)
+    LOGGER.debug(" received getServerInfoResp cmd..." + data)
     val tempData = data.split(":")
     val socketId = tempData(0)
     val ip = tempData(1)
@@ -294,7 +294,7 @@ object Boostrap {
 
   private def handleGetServerInfoEvent(client: SocketIOClient, server: SocketIOServer, data: String) = {
     LOGGER.debug("server received serverInf cmd....." + data)
-    val requests = gson.fromJson(data, new TypeToken[util.List[DeployRequest]]() {}.getType)
+    val requests:util.ArrayList[DeployRequest]  = gson.fromJson(data, new TypeToken[util.List[DeployRequest]]() {}.getType)
     // 如有修改应当拷贝一份,定时器需要更新查询的数据
     // fixme 将不同客户端发送的服务都问询一遍,需要去重复，拿并集
     services = requests
@@ -361,7 +361,7 @@ object Boostrap {
 
 
   private def sendGetServiceInfo(nodesMap: util.Map[String, HostAgent], server: SocketIOServer): Unit = {
-    LOGGER.info("::: request services[" + services.size + "]" + services)
+    LOGGER.debug("::: request services[" + services.size + "]" + services)
     services.forEach((request: DeployRequest) => {
       nodesMap.values.forEach((agent: HostAgent) => {
         if (request.getIp == agent.getIp) {
