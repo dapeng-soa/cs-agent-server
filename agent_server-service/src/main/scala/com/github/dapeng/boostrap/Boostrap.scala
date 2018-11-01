@@ -16,7 +16,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.slf4j.LoggerFactory
 import org.springframework.context.support.ClassPathXmlApplicationContext
-import wangzx.scala_commons.sql.BeanBuilder
 
 import scala.collection.JavaConverters._
 
@@ -262,11 +261,11 @@ object Boostrap {
 
       case _ =>
         val record = new TServiceBuildRecords()
-        record.setBuildLog("not records Found buildRecord")
+        record.setBuildLog("")
         record
     }
 
-    server.getRoomOperations("web").sendEvent(EventType.GET_BUILD_PROGRESSIVE_RESP.name, gson.toJson(respose))
+    server.getClient(client.getSessionId).sendEvent(EventType.GET_BUILD_PROGRESSIVE_RESP.name, gson.toJson(respose))
   }
 
   private def handleGetYmlFileEvent(server: SocketIOServer, data: String) = {
