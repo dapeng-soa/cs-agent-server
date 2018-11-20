@@ -63,6 +63,8 @@ object EventType {
 
   val SYNC_NETWORK = new EventType(24, "syncNetwork")
 
+  val SYNC_NETWORK_RESP = new EventType(25, "syncNetworkResp")
+
   val ERROR_EVENT = new EventType(99, "errorEvent")
 
   def unknown(id: Int) = new EventType(id, id + "")
@@ -94,6 +96,7 @@ object EventType {
     case 22 => GET_BUILD_PROGRESSIVE
     case 23 => GET_BUILD_PROGRESSIVE_RESP
     case 24 => SYNC_NETWORK
+    case 25 => SYNC_NETWORK_RESP
     case 99 => ERROR_EVENT
     case _ => unknown(id)
   }
@@ -123,6 +126,7 @@ object EventType {
     case "getBuildProgressive" => GET_BUILD_PROGRESSIVE
     case "getBuildProgressiveResp" => GET_BUILD_PROGRESSIVE_RESP
     case "syncNetwork" => SYNC_NETWORK
+    case "syncNetworkResp" => SYNC_NETWORK_RESP
     case "errorEvent" => ERROR_EVENT
     case _ => unknown(label)
   }

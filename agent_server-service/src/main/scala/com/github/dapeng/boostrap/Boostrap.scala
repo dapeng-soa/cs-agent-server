@@ -38,8 +38,11 @@ object Boostrap {
   private val buildCache = new ConcurrentHashMap[String, (Int, ServiceBuildResponse)]
 
   def main(args: Array[String]): Unit = {
-    val ac = new ClassPathXmlApplicationContext("classpath:services.xml");
-    ac.start()
+    val buildEnable = System.getenv("build_enable")
+    if (null != buildEnable && buildEnable.toBoolean) {
+      val ac = new ClassPathXmlApplicationContext("classpath:services.xml");
+      ac.start()
+    }
 
     val (host, port) = if (args != null && args.length >= 2) {
       (args(0), Integer.valueOf(args(1)))
@@ -99,6 +102,9 @@ object Boostrap {
     server.addEventListener(EventType.RESTART.name, classOf[String], (_, data: String, _) => {
       handleRestartEvent(server, data)
     })
+    server.addEventListener(EventType.SYNC_NETWORK.name, classOf[String], (_, data: String, _) => {
+      handleSyncNetworkEvent(server, data)
+    })
     /*--------------发送给Agent的事件 end----------------------------------*/
 
 
@@ -118,6 +124,10 @@ object Boostrap {
 
     server.addEventListener(EventType.GET_BUILD_PROGRESSIVE.name, classOf[String], (client: SocketIOClient, data: String, _) => {
       handleGetBuildProgressiveEvent(client, server, data)
+    })
+    server.addEventListener(EventType.SYNC_NETWORK_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
+      LOGGER.info(" server received syncNetworkResp cmd" + data)
+      server.getRoomOperations("web").sendEvent(EventType.SYNC_NETWORK_RESP.name, data)
     })
     server.addEventListener(EventType.DEPLOY_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
       LOGGER.info(" server received deployResp cmd" + data)
@@ -191,6 +201,19 @@ object Boostrap {
     })
   }
 
+  private def handleSyncNetworkEvent(server: SocketIOServer, data: String) = {
+    val vo = gson.fromJson(data, classOf[SyncNetworkVo])
+    LOGGER.info(" server received syncNetwork cmd" + data)
+    nodesMap.values.forEach((agent: HostAgent) => {
+      vo.getHosts.forEach((host: String) => {
+        if (host == agent.getIp) {
+          val targetAgent = server.getClient(UUID.fromString(agent.getSessionId))
+          if (targetAgent != null) targetAgent.sendEvent(EventType.SYNC_NETWORK.name, data)
+        }
+      })
+    })
+  }
+
   private def handleBuildResponseEvent(client: SocketIOClient, server: SocketIOServer, data: String) = {
     LOGGER.info(" server received buildResp cmd" + data)
     val agent = nodesMap.get(client.getSessionId.toString)
@@ -231,7 +254,7 @@ object Boostrap {
     val respose = maybeRecord match {
       case Some(x) => {
         // 构建中则从内存中获取,但需要判断start字段
-        val logs= if (x.status == 0) {
+        val logs = if (x.status == 0) {
           "waiting for build"
         } else if (x.status == 1) {
           LOGGER.info(s" current progress buildCache. ${buildCache.asScala.keys}")
@@ -303,7 +326,7 @@ object Boostrap {
 
   private def handleGetServerInfoEvent(client: SocketIOClient, server: SocketIOServer, data: String) = {
     LOGGER.debug("server received serverInf cmd....." + data)
-    val requests:util.ArrayList[DeployRequest]  = gson.fromJson(data, new TypeToken[util.List[DeployRequest]]() {}.getType)
+    val requests: util.ArrayList[DeployRequest] = gson.fromJson(data, new TypeToken[util.List[DeployRequest]]() {}.getType)
     // 如有修改应当拷贝一份,定时器需要更新查询的数据
     // fixme 将不同客户端发送的服务都问询一遍,需要去重复，拿并集
     services = requests
