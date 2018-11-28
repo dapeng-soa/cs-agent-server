@@ -105,6 +105,9 @@ object Boostrap {
     server.addEventListener(EventType.SYNC_NETWORK.name, classOf[String], (_, data: String, _) => {
       handleSyncNetworkEvent(server, data)
     })
+    server.addEventListener(EventType.RM_CONTAINER.name, classOf[String], (_, data: String, _) => {
+      handleRmContainerEvent(server, data)
+    })
     /*--------------发送给Agent的事件 end----------------------------------*/
 
 
@@ -136,6 +139,10 @@ object Boostrap {
     server.addEventListener(EventType.STOP_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
       LOGGER.info(" server received stopResp cmd" + data)
       server.getRoomOperations("web").sendEvent(EventType.STOP_RESP.name, data)
+    })
+    server.addEventListener(EventType.RM_CONTAINER_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
+      LOGGER.info(" server received rmContainerResp cmd" + data)
+      server.getRoomOperations("web").sendEvent(EventType.RM_CONTAINER_RESP.name, data)
     })
     server.addEventListener(EventType.RESTART_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
       LOGGER.info(" server received restartResp cmd" + data)
@@ -186,6 +193,17 @@ object Boostrap {
       if (request.getIp == agent.getIp) {
         val targetAgent = server.getClient(UUID.fromString(agent.getSessionId))
         if (targetAgent != null) targetAgent.sendEvent(EventType.STOP.name, data)
+      }
+    })
+  }
+
+  private def handleRmContainerEvent(server: SocketIOServer, data: String) = {
+    val request = gson.fromJson(data, classOf[DeployRequest])
+    LOGGER.info(" server received rmContainer cmd" + data)
+    nodesMap.values.forEach((agent: HostAgent) => {
+      if (request.getIp == agent.getIp) {
+        val targetAgent = server.getClient(UUID.fromString(agent.getSessionId))
+        if (targetAgent != null) targetAgent.sendEvent(EventType.RM_CONTAINER.name, data)
       }
     })
   }
