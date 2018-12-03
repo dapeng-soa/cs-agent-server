@@ -444,10 +444,6 @@ object Boostrap {
     if (!buildCache.isEmpty && buildCache.contains(buildVo.getAgentHost)) client.sendEvent(EventType.BUILDING.name, "服务正在构建中, 请稍等........")
     else {
       val sb = new StringBuilder(64)
-      //            sb.append(buildVo.getAgentHost()).append(":")
-      //                    .append(buildVo.getBuildService()).append(":")
-      //                    .append(buildVo.getTaskId()).append(":")
-      //                    .append(buildVo.getId());
       sb.append(buildVo.getAgentHost)
       val response = toServiceBuildResponse(buildVo)
       buildCache.put(sb.toString, (0, response))
@@ -460,7 +456,7 @@ object Boostrap {
         nodesMap.values.stream.filter((i: HostAgent) => i.getIp == buildServerIp).forEach((agent: HostAgent) => {
           val agentClient = server.getClient(UUID.fromString(agent.getSessionId))
           if (agentClient == null) server.getClient(client.getSessionId).sendEvent(EventType.ERROR_EVENT.name, "找不到对应clientAgent: " + agent.getIp)
-          else agentClient.sendEvent(EventType.BUILD.name, gson.toJson(buildVo.getBuildServices))
+          else agentClient.sendEvent(EventType.BUILD.name, gson.toJson(buildVo))
         })
       }
     }

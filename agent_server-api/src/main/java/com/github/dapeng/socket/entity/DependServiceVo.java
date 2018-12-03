@@ -4,12 +4,12 @@ import java.util.Objects;
 
 public class DependServiceVo {
 
-    //gitURL: String, gitName: String, serviceName: String, buildOperation: String
     private String gitURL = "";
     private String gitName = "";
     private String serviceName = "";
     private String buildOperation = "";
     private String branchName = "master";
+    private String imageName = "";
 
 
     public String getGitURL() {
@@ -50,6 +50,14 @@ public class DependServiceVo {
 
     public void setBranchName(String branchName) {
         this.branchName = branchName;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
     }
 
     public DependServiceVo() {

@@ -9,11 +9,7 @@ public class BuildVo {
     private String agentHost;
     private String buildService;
     private long taskId;
-
-//    private int status;
-//    private String content;
-
-
+    private String imageName;
     private List<DependServiceVo> buildServices;
 
     public long getId() {
@@ -54,5 +50,13 @@ public class BuildVo {
 
     public void setBuildServices(List<DependServiceVo> buildServices) {
         this.buildServices = buildServices;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
     }
 }
