@@ -69,6 +69,10 @@ object EventType {
 
   val RM_CONTAINER_RESP = new EventType(27, "rmContainerResp")
 
+  val REMOTE_DEPLOY = new EventType(28, "remoteDeploy")
+
+  val REMOTE_DEPLOY_RESP = new EventType(29, "remoteDeployResp")
+
   val ERROR_EVENT = new EventType(99, "errorEvent")
 
   def unknown(id: Int) = new EventType(id, id + "")
@@ -103,6 +107,8 @@ object EventType {
     case 25 => SYNC_NETWORK_RESP
     case 26 => RM_CONTAINER
     case 27 => RM_CONTAINER_RESP
+    case 28 => REMOTE_DEPLOY
+    case 29 => REMOTE_DEPLOY_RESP
     case 99 => ERROR_EVENT
     case _ => unknown(id)
   }
@@ -135,6 +141,8 @@ object EventType {
     case "syncNetworkResp" => SYNC_NETWORK_RESP
     case "rmContainer" => RM_CONTAINER
     case "rmContainerResp" => RM_CONTAINER_RESP
+    case "remoteDeploy" => REMOTE_DEPLOY
+    case "remoteDeployResp" => REMOTE_DEPLOY_RESP
     case "errorEvent" => ERROR_EVENT
     case _ => unknown(label)
   }

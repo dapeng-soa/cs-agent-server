@@ -108,6 +108,9 @@ object Boostrap {
     server.addEventListener(EventType.RM_CONTAINER.name, classOf[String], (_, data: String, _) => {
       handleRmContainerEvent(server, data)
     })
+    server.addEventListener(EventType.REMOTE_DEPLOY_RESP.name, classOf[String], (client: SocketIOClient, data: String, _) => {
+      handleRemoteDeployRespEvent(client, server, data)
+    })
     /*--------------发送给Agent的事件 end----------------------------------*/
 
 
@@ -232,6 +235,24 @@ object Boostrap {
     })
   }
 
+  private def handleRemoteDeployRespEvent(client: SocketIOClient, server: SocketIOServer, data: String) = {
+    LOGGER.info(" server received remoteDeployResp cmd" + data)
+    if (data.contains("[REMOTE_DEPLOY_END]")) {
+      val res = data.split(":")
+      val deployStatus = res(1).toInt
+      val buildId = res(2).toLong
+      val sourceIp = res(3)
+
+      // 根据来源ip查找构建缓存,将缓存的任务状态修改，删除缓存
+      val responseTuple = buildCache.get(sourceIp)
+      val response = responseTuple._2
+      response.getContent.append(data + "\r\n")
+      ConfigServerSql.updateBuildServiceRecord(buildId, if (deployStatus == 0) 2 else 3, response.getContent.toString)
+      buildCache.remove(sourceIp)
+    }
+
+  }
+
   private def handleBuildResponseEvent(client: SocketIOClient, server: SocketIOServer, data: String) = {
     LOGGER.info(" server received buildResp cmd" + data)
     val agent = nodesMap.get(client.getSessionId.toString)
@@ -240,6 +261,23 @@ object Boostrap {
     response.getContent.append(data + "\r\n")
 
     server.getRoomOperations("web").sendEvent(EventType.BUILD_RESP.name, data)
+    //
+    if (data.contains("[REMOTE_DEPLOY]")) {
+      LOGGER.info(s"[REMOTE_DEPLOY INFO]=> $data")
+      val info = data.split(":")
+      val buildId = info(1)
+      val sourceIp = info(2)
+      val deployHost = info(3)
+      val serviceName = info(4)
+      val imageName = info(5)
+      val imageTag = info(6)
+      nodesMap.values().forEach((agent: HostAgent) => {
+        if (deployHost == agent.getIp) {
+          val targetAgent = server.getClient(UUID.fromString(agent.getSessionId))
+          if (targetAgent != null) targetAgent.sendEvent(EventType.REMOTE_DEPLOY.name, data)
+        }
+      })
+    }
     //TODO: if build done , update TServiceBuildRecord
     if (data.contains("BUILD_END")) { //fixme 1. updateRecord 消除魔法数字
 
@@ -473,4 +511,6 @@ object Boostrap {
     response.setBuildServiceSize(buildVo.getBuildServices.size())
     response
   }
+
+
 }
