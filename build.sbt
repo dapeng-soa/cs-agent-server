@@ -16,6 +16,11 @@ lazy val api = (project in file("agent_server-api"))
   .settings(
     commonSettings,
     name := "agent_server-api",
+    publishTo := Some("today-snapshots" at "http://nexus.today36524.td/repository/maven-snapshots/"),
+    publishConfiguration := publishConfiguration.value.withOverwrite(true),
+    publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true),
+    publishM2Configuration := publishM2Configuration.value.withOverwrite(true),
+    credentials += Credentials("Sonatype Nexus Repository Manager", "nexus.today36524.td", "central-services", "E@Z.nrW3"),
     libraryDependencies ++= Seq(
       "com.github.wangzaixiang" %% "scala-sql" % "2.0.6",
       "com.google.code.gson" % "gson" % "2.3.1"
