@@ -237,6 +237,14 @@ object Boostrap {
 
   private def handleRemoteDeployRespEvent(client: SocketIOClient, server: SocketIOServer, data: String) = {
     LOGGER.info(" server received remoteDeployResp cmd" + data)
+    if (data.contains("[SOURCE_HOST]")) {
+      val res = data.split(":::")
+      val log = res(0)
+      val sourceIp = res(2)
+      val responseTuple = buildCache.get(sourceIp)
+      val response = responseTuple._2
+      response.getContent.append(log + "\r\n")
+    }
     if (data.contains("[REMOTE_DEPLOY_END]")) {
       val res = data.split(":")
       val deployStatus = res(1).toInt
@@ -264,7 +272,7 @@ object Boostrap {
     //
     if (data.contains("[REMOTE_DEPLOY]")) {
       LOGGER.info(s"[REMOTE_DEPLOY INFO]=> $data")
-      val info = data.split(":")
+      val info = data.split(":::")
       val buildId = info(1)
       val sourceIp = info(2)
       val deployHost = info(3)
