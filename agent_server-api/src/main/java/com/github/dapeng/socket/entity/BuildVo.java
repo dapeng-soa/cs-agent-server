@@ -10,6 +10,7 @@ public class BuildVo {
     private String buildService;
     private long taskId;
     private String imageName;
+    private String deployHost;
     private List<DependServiceVo> buildServices;
 
     public long getId() {
@@ -58,5 +59,13 @@ public class BuildVo {
 
     public void setImageName(String imageName) {
         this.imageName = imageName;
+    }
+
+    public String getDeployHost() {
+        return deployHost;
+    }
+
+    public void setDeployHost(String deployHost) {
+        this.deployHost = deployHost;
     }
 }
