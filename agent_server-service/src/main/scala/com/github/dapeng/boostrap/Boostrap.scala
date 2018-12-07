@@ -269,23 +269,39 @@ object Boostrap {
     response.getContent.append(data + "\r\n")
 
     server.getRoomOperations("web").sendEvent(EventType.BUILD_RESP.name, data)
-    //
+
+    // 远程部署事件发布start
     if (data.contains("[REMOTE_DEPLOY]")) {
       LOGGER.info(s"[REMOTE_DEPLOY INFO]=> $data")
       val info = data.split(":::")
-      val buildId = info(1)
+      val buildId = info(1).toInt
       val sourceIp = info(2)
       val deployHost = info(3)
       val serviceName = info(4)
-      val imageName = info(5)
-      val imageTag = info(6)
-      nodesMap.values().forEach((agent: HostAgent) => {
-        if (deployHost == agent.getIp) {
-          val targetAgent = server.getClient(UUID.fromString(agent.getSessionId))
-          if (targetAgent != null) targetAgent.sendEvent(EventType.REMOTE_DEPLOY.name, data)
-        }
-      })
+      val agents: List[HostAgent] = nodesMap.values().asScala.filter(a => deployHost == a.getIp).toList
+      if (agents.isEmpty) {
+        val responseTuple = buildCache.get(sourceIp)
+        val response = responseTuple._2
+        response.getContent.append(s"\\033[31m [$serviceName]remote deploy fail,deployHost[$deployHost] not activity\\033[0m")
+        ConfigServerSql.updateBuildServiceRecord(buildId, 3, response.getContent.toString)
+        buildCache.remove(sourceIp)
+      } else {
+        agents.foreach(x => {
+          val targetAgent = server.getClient(UUID.fromString(x.getSessionId))
+          if (targetAgent != null) {
+            targetAgent.sendEvent(EventType.REMOTE_DEPLOY.name, data)
+          } else {
+            val responseTuple = buildCache.get(sourceIp)
+            val response = responseTuple._2
+            response.getContent.append(s"\\033[31m [$serviceName]remote deploy fail,deployHost[$deployHost] not activity\\033[0m")
+            ConfigServerSql.updateBuildServiceRecord(buildId, 3, response.getContent.toString)
+            buildCache.remove(sourceIp)
+          }
+        })
+      }
     }
+    //远程部署事件end
+
     //TODO: if build done , update TServiceBuildRecord
     if (data.contains("BUILD_END")) { //fixme 1. updateRecord 消除魔法数字
 
