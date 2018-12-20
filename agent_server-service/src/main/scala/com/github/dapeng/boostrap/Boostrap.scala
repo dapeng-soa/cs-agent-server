@@ -515,10 +515,15 @@ object Boostrap {
       if (buildServerIp == null || buildServerIp.isEmpty) {
         server.getClient(client.getSessionId).sendEvent(EventType.ERROR_EVENT.name, "构建服务器的IP不能为空")
       } else {
-        nodesMap.values.stream.filter((i: HostAgent) => i.getIp == buildServerIp).forEach((agent: HostAgent) => {
+        nodesMap.values.stream.filter((i: HostAgent) => i.getIp.equals(buildServerIp)).forEach((agent: HostAgent) => {
           val agentClient = server.getClient(UUID.fromString(agent.getSessionId))
-          if (agentClient == null) server.getClient(client.getSessionId).sendEvent(EventType.ERROR_EVENT.name, "找不到对应clientAgent: " + agent.getIp)
-          else agentClient.sendEvent(EventType.BUILD.name, gson.toJson(buildVo))
+          if (agentClient != null) {
+            agentClient.sendEvent(EventType.BUILD.name, gson.toJson(buildVo))
+            LOGGER.info(s"send event to:${agent.getIp}")
+          } else {
+            LOGGER.error(s"not found clientAgent:${agent.getIp}")
+            server.getClient(client.getSessionId).sendEvent(EventType.ERROR_EVENT.name, "找不到对应clientAgent: " + agent.getIp)
+          }
         })
       }
     }
