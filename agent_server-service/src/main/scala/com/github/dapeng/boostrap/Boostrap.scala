@@ -4,7 +4,7 @@ import java.util
 import java.util.UUID
 import java.util.concurrent._
 
-import com.corundumstudio.socketio.{AckRequest, Configuration, SocketIOClient, SocketIOServer}
+import com.corundumstudio.socketio._
 import com.github.dapeng.datasource.ConfigServerSql
 import com.github.dapeng.entity.TServiceBuildRecord
 import com.github.dapeng.socket.entity._
@@ -64,6 +64,9 @@ object Boostrap {
     config.setPort(port)
     config.setHostname(hostName)
     config.setAllowCustomRequests(true)
+    val subconfig = new SocketConfig()
+    subconfig.setReuseAddress(true)
+    config.setSocketConfig(subconfig)
 
     val server = new SocketIOServer(config)
 
@@ -111,10 +114,21 @@ object Boostrap {
     server.addEventListener(EventType.REMOTE_DEPLOY_RESP.name, classOf[String], (client: SocketIOClient, data: String, _) => {
       handleRemoteDeployRespEvent(client, server, data)
     })
+    /*--------------处理web命令行----------------------------------*/
+    server.addEventListener(EventType.CMD_EVENT.name, classOf[String], (_, data: String, _) => {
+      handleCmdEvent(server, data)
+    })
+    server.addEventListener(EventType.CMD_EXITED.name, classOf[String], (_, data: String, _) => {
+      server.getClient(UUID.fromString(data)).sendEvent(EventType.CMD_EXITED.name, data)
+    })
     /*--------------发送给Agent的事件 end----------------------------------*/
 
 
     /*-----------发送给web 的事件 start------------------*/
+    server.addEventListener(EventType.CMD_RESP.name, classOf[String], (_, data: String, _) => {
+      val reply: CmdOutputVo = gson.fromJson(data, classOf[CmdOutputVo])
+      server.getClient(UUID.fromString(reply.getSourceClient)).sendEvent(EventType.CMD_RESP.name, reply.getOutput)
+    })
     server.addEventListener(EventType.NODE_EVENT.name, classOf[String], (_, agentEvent: String, _) => {
       server.getRoomOperations("web").sendEvent(EventType.NODE_EVENT.name, agentEvent)
     })
@@ -176,6 +190,16 @@ object Boostrap {
 
     server.stop()
 
+  }
+
+  private def handleCmdEvent(server: SocketIOServer, data: String): Unit = {
+    val request: CmdRequest = gson.fromJson(data, classOf[CmdRequest])
+    nodesMap.values.forEach((agent: HostAgent) => {
+      if (request.getIp == agent.getIp) {
+        val targetAgent = server.getClient(UUID.fromString(agent.getSessionId))
+        if (targetAgent != null) targetAgent.sendEvent(EventType.CMD_EVENT.name, data)
+      }
+    })
   }
 
   private def handleRestartEvent(server: SocketIOServer, data: String) = {
@@ -466,7 +490,7 @@ object Boostrap {
       // web 离开通知所有agent客户端
       nodesMap.values.forEach((agent: HostAgent) => {
         val targetAgent = server.getClient(UUID.fromString(agent.getSessionId))
-        if (targetAgent != null) targetAgent.sendEvent(EventType.WEB_LEAVE.name, EventType.WEB_LEAVE.name)
+        if (targetAgent != null) targetAgent.sendEvent(EventType.WEB_LEAVE.name, socketIOClient.getSessionId.toString)
       })
     }
   }
