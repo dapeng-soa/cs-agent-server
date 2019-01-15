@@ -10,6 +10,8 @@ public class CmdRequest {
     private String sourceClientId;
     private String ip;
     private String containerId;
+    private String width;
+    private String height;
     private String data;
 
     public String getSourceClientId() {
@@ -42,5 +44,21 @@ public class CmdRequest {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+    public String getWidth() {
+        return width;
+    }
+
+    public void setWidth(String width) {
+        this.width = width;
+    }
+
+    public String getHeight() {
+        return height;
+    }
+
+    public void setHeight(String height) {
+        this.height = height;
     }
 }
