@@ -115,8 +115,8 @@ object Boostrap {
       handleRemoteDeployRespEvent(client, server, data)
     })
     /*--------------处理web命令行----------------------------------*/
-    server.addEventListener(EventType.CMD_EVENT.name, classOf[String], (_, data: String, _) => {
-      handleCmdEvent(server, data)
+    server.addEventListener(EventType.CMD_EVENT.name, classOf[String], (client: SocketIOClient, data: String, _) => {
+      handleCmdEvent(client, server, data)
     })
     server.addEventListener(EventType.CMD_EXITED.name, classOf[String], (_, data: String, _) => {
       server.getClient(UUID.fromString(data)).sendEvent(EventType.CMD_EXITED.name, data)
@@ -192,14 +192,19 @@ object Boostrap {
 
   }
 
-  private def handleCmdEvent(server: SocketIOServer, data: String): Unit = {
+  private def handleCmdEvent(client: SocketIOClient, server: SocketIOServer, data: String): Unit = {
     val request: CmdRequest = gson.fromJson(data, classOf[CmdRequest])
+    var notFound = true
     nodesMap.values.forEach((agent: HostAgent) => {
       if (request.getIp == agent.getIp) {
+        notFound = false
         val targetAgent = server.getClient(UUID.fromString(agent.getSessionId))
         if (targetAgent != null) targetAgent.sendEvent(EventType.CMD_EVENT.name, data)
       }
     })
+    if (notFound) {
+      server.getClient(client.getSessionId).sendEvent(EventType.CMD_RESP.name, s"notFound host => ${request.getIp}")
+    }
   }
 
   private def handleRestartEvent(server: SocketIOServer, data: String) = {
