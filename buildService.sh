@@ -5,5 +5,5 @@ echo build on ${pwd}
 sbt clean service/assembly
 cp ${pwd}${buildPackage} docker/agent_server.jar
 cd docker
-docker build -t docker.today36524.com.cn:5000/basic/agent-server:V2.0 .
+docker build -t harbor.today36524.td/basic/agent-server:k8s-1.0 .
 cd ${pwd}

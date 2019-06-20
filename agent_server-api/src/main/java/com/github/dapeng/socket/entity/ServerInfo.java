@@ -17,10 +17,19 @@ public class ServerInfo {
 
     private String socketId;
     private String ip;
+    private String nameSpace;
     private String serviceName;
     private long time;
     private boolean status;
     private String tag;
+
+    public String getNameSpace() {
+        return nameSpace;
+    }
+
+    public void setNameSpace(String nameSpace) {
+        this.nameSpace = nameSpace;
+    }
 
     public String getServiceName() {
         return serviceName;
