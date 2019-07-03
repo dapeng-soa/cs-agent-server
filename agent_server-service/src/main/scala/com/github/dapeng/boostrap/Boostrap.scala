@@ -439,7 +439,7 @@ object Boostrap {
     val status = tempData(4).toBoolean
     val time = tempData(5).toLong
     val tag = tempData(6)
-    val replicas = tempData(7)
+    val replicasInfo = tempData(7)
     val info = new ServerInfo
     info.setSocketId(socketId)
     info.setNameSpace(nameSpace)
@@ -448,7 +448,7 @@ object Boostrap {
     info.setTime(time)
     info.setStatus(status)
     info.setTag(tag)
-    info.setReplicasStatus(replicas)
+    info.setReplicasInfo(replicasInfo)
     // 单个返回
     server.getRoomOperations("web").sendEvent(EventType.GET_SERVER_INFO_RESP.name, gson.toJson(info))
   }
