@@ -4,7 +4,12 @@ import java.util
 import java.util.UUID
 import java.util.concurrent._
 
+<<<<<<< HEAD
 import com.corundumstudio.socketio._
+=======
+import com.corundumstudio.socketio.{AckRequest, Configuration, SocketIOClient, SocketIOServer}
+import com.github.dapeng.boostrap.Boostrap.evenDataIsVaild
+>>>>>>> e3b16585608cc763b1e65f9a790288d4db1f75a3
 import com.github.dapeng.datasource.ConfigServerSql
 import com.github.dapeng.entity.TServiceBuildRecord
 import com.github.dapeng.socket.entity._
@@ -22,6 +27,10 @@ import scala.collection.JavaConverters._
 object Boostrap {
 
   private val LOGGER = LoggerFactory.getLogger(classOf[CmdExecutor])
+
+  private val DAPENBG_EVENT_HEAD = "DAPENBG_EVENT_HEAD"
+  private val DAPENBG_EVENT_TAIL = "DAPENBG_EVENT_TAIL"
+
   private val timer = Executors.newSingleThreadScheduledExecutor
 
   private var services = new util.ArrayList[DeployRequest](32)
@@ -76,10 +85,14 @@ object Boostrap {
       handleDisconnectEvent(socketIOClient, server)
     })
     server.addEventListener(EventType.NODE_REG.name, classOf[String], (client: SocketIOClient, data: String, _) => {
-      handleNodeRegEvent(client, data)
+      if (evenDataIsVaild(data)) {
+        handleNodeRegEvent(client, data)
+      }
     })
     server.addEventListener(EventType.WEB_REG.name, classOf[String], (client: SocketIOClient, data: String, _) => {
-      handleWebRegEvent(client, data)
+      if (evenDataIsVaild(data)) {
+        handleWebRegEvent(client, data)
+      }
     })
 
     /*--------------发送给Agent的事件 start----------------------------------*/
@@ -87,32 +100,50 @@ object Boostrap {
       handleWebEvent(socketIOClient, server, agentEvent)
     })
     server.addEventListener(EventType.GET_SERVER_INFO.name, classOf[String], (client: SocketIOClient, data: String, _) => {
-      handleGetServerInfoEvent(client, server, data)
+      if (evenDataIsVaild(data)) {
+        handleGetServerInfoEvent(client, server, data)
+      }
     })
     server.addEventListener(EventType.GET_YAML_FILE.name, classOf[String], (_, data: String, _) => {
-      handleGetYmlFileEvent(server, data)
+      if (evenDataIsVaild(data)) {
+        handleGetYmlFileEvent(server, data)
+      }
     })
     server.addEventListener(EventType.BUILD.name, classOf[String], (client: SocketIOClient, data: String, _) => {
       LOGGER.info(" start to build server info...data: " + data)
-      handleBuildEvent(client, server, data)
+      if (evenDataIsVaild(data)) {
+        handleBuildEvent(client, server, data)
+      }
     })
     server.addEventListener(EventType.DEPLOY.name, classOf[String], (_, data: String, _) => {
-      handleDeployEvent(server, data)
+      if (evenDataIsVaild(data)) {
+        handleDeployEvent(server, data)
+      }
     })
     server.addEventListener(EventType.STOP.name, classOf[String], (_, data: String, _) => {
-      handleStopEvent(server, data)
+      if (evenDataIsVaild(data)) {
+        handleStopEvent(server, data)
+      }
     })
     server.addEventListener(EventType.RESTART.name, classOf[String], (_, data: String, _) => {
-      handleRestartEvent(server, data)
+      if (evenDataIsVaild(data)) {
+        handleRestartEvent(server, data)
+      }
     })
     server.addEventListener(EventType.SYNC_NETWORK.name, classOf[String], (_, data: String, _) => {
-      handleSyncNetworkEvent(server, data)
+      if (evenDataIsVaild(data)) {
+        handleSyncNetworkEvent(server, data)
+      }
     })
     server.addEventListener(EventType.RM_CONTAINER.name, classOf[String], (_, data: String, _) => {
-      handleRmContainerEvent(server, data)
+      if (evenDataIsVaild(data)) {
+        handleRmContainerEvent(server, data)
+      }
     })
     server.addEventListener(EventType.REMOTE_DEPLOY_RESP.name, classOf[String], (client: SocketIOClient, data: String, _) => {
-      handleRemoteDeployRespEvent(client, server, data)
+      if (evenDataIsVaild(data)) {
+        handleRemoteDeployRespEvent(client, server, data)
+      }
     })
     /*--------------处理web命令行----------------------------------*/
     server.addEventListener(EventType.CMD_EVENT.name, classOf[String], (client: SocketIOClient, data: String, _) => {
@@ -139,38 +170,56 @@ object Boostrap {
       server.getRoomOperations("web").sendEvent(EventType.GET_REGED_AGENTS_RESP.name, gson.toJson(nodesMap))
     })
     server.addEventListener(EventType.BUILD_RESP.name, classOf[String], (client: SocketIOClient, data: String, _) => {
-      handleBuildResponseEvent(client, server, data)
+      if (evenDataIsVaild(data)) {
+        handleBuildResponseEvent(client, server, data)
+      }
     })
 
     server.addEventListener(EventType.GET_BUILD_PROGRESSIVE.name, classOf[String], (client: SocketIOClient, data: String, _) => {
-      handleGetBuildProgressiveEvent(client, server, data)
+      if (evenDataIsVaild(data)) {
+        handleGetBuildProgressiveEvent(client, server, data)
+      }
     })
     server.addEventListener(EventType.SYNC_NETWORK_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
       LOGGER.info(" server received syncNetworkResp cmd" + data)
-      server.getRoomOperations("web").sendEvent(EventType.SYNC_NETWORK_RESP.name, data)
+      if (evenDataIsVaild(data)) {
+        server.getRoomOperations("web").sendEvent(EventType.SYNC_NETWORK_RESP.name, data)
+      }
     })
     server.addEventListener(EventType.DEPLOY_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
       LOGGER.info(" server received deployResp cmd" + data)
-      server.getRoomOperations("web").sendEvent(EventType.DEPLOY_RESP.name, data)
+      if (evenDataIsVaild(data)) {
+        server.getRoomOperations("web").sendEvent(EventType.DEPLOY_RESP.name, data)
+      }
     })
     server.addEventListener(EventType.STOP_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
       LOGGER.info(" server received stopResp cmd" + data)
-      server.getRoomOperations("web").sendEvent(EventType.STOP_RESP.name, data)
+      if (evenDataIsVaild(data)) {
+        server.getRoomOperations("web").sendEvent(EventType.STOP_RESP.name, data)
+      }
     })
     server.addEventListener(EventType.RM_CONTAINER_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
       LOGGER.info(" server received rmContainerResp cmd" + data)
-      server.getRoomOperations("web").sendEvent(EventType.RM_CONTAINER_RESP.name, data)
+      if (evenDataIsVaild(data)) {
+        server.getRoomOperations("web").sendEvent(EventType.RM_CONTAINER_RESP.name, data)
+      }
     })
     server.addEventListener(EventType.RESTART_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
       LOGGER.info(" server received restartResp cmd" + data)
-      server.getRoomOperations("web").sendEvent(EventType.RESTART_RESP.name, data)
+      if (evenDataIsVaild(data)) {
+        server.getRoomOperations("web").sendEvent(EventType.RESTART_RESP.name, data)
+      }
     })
     server.addEventListener(EventType.GET_YAML_FILE_RESP.name, classOf[String], (client: SocketIOClient, data: String, ackRequest: AckRequest) => {
       LOGGER.debug(" server received getYamlFileResp cmd" + data)
       server.getRoomOperations("web").sendEvent(EventType.GET_YAML_FILE_RESP.name, data)
     })
+
     server.addEventListener(EventType.GET_SERVER_INFO_RESP.name, classOf[String], (_, data: String, _) => {
-      handleGetServerInfoResponseEvent(server, data)
+      LOGGER.debug(" server received getServerInfoResp cmd" + data)
+      if (evenDataIsVaild(data)) {
+        handleGetServerInfoResponseEvent(server, data)
+      }
     })
     /*-----------发送给web 的事件 End------------------*/
 
@@ -417,18 +466,22 @@ object Boostrap {
     LOGGER.debug(" received getServerInfoResp cmd..." + data)
     val tempData = data.split(":")
     val socketId = tempData(0)
-    val ip = tempData(1)
-    val serviceName = tempData(2)
-    val status = tempData(3).toBoolean
-    val time = tempData(4).toLong
-    val tag = tempData(5)
+    val nameSpace = tempData(1)
+    val ip = tempData(2)
+    val serviceName = tempData(3)
+    val status = tempData(4).toBoolean
+    val time = tempData(5).toLong
+    val tag = tempData(6)
+    val replicasInfo = tempData(7)
     val info = new ServerInfo
     info.setSocketId(socketId)
+    info.setNameSpace(nameSpace)
     info.setIp(ip)
     info.setServiceName(serviceName)
     info.setTime(time)
     info.setStatus(status)
     info.setTag(tag)
+    info.setReplicasInfo(replicasInfo)
     // 单个返回
     server.getRoomOperations("web").sendEvent(EventType.GET_SERVER_INFO_RESP.name, gson.toJson(info))
   }
@@ -570,5 +623,7 @@ object Boostrap {
     response
   }
 
-
+  private def evenDataIsVaild(eventData: String): Boolean = {
+    !(eventData.contains(DAPENBG_EVENT_HEAD) || eventData.contains(DAPENBG_EVENT_TAIL))
+  }
 }

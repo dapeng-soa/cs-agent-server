@@ -8,9 +8,20 @@ import java.util.List;
 public class DeployVo {
 
     /**
+     * k8s namespace
+     */
+    private String nameSpace;
+
+    /**
      * yml文件内容
      */
     private String fileContent;
+
+    /**
+     * k8s-yml文件内容
+     */
+    private String k8sYamlContent;
+
     /**
      * 服务名
      */
@@ -28,6 +39,14 @@ public class DeployVo {
      */
     List<VolumesFile> volumesFiles;
 
+    public String getNameSpace() {
+        return nameSpace;
+    }
+
+    public void setNameSpace(String nameSpace) {
+        this.nameSpace = nameSpace;
+    }
+
     public String getIp() {
         return ip;
     }
@@ -42,6 +61,14 @@ public class DeployVo {
 
     public void setFileContent(String fileContent) {
         this.fileContent = fileContent;
+    }
+
+    public String getK8sYamlContent() {
+        return k8sYamlContent;
+    }
+
+    public void setK8sYamlContent(String k8sYamlContent) {
+        this.k8sYamlContent = k8sYamlContent;
     }
 
     public Long getLastModifyTime() {
