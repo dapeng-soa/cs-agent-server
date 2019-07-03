@@ -22,6 +22,8 @@ public class ServerInfo {
     private long time;
     private boolean status;
     private String tag;
+    private String replicasStatus;
+
 
     public String getNameSpace() {
         return nameSpace;
@@ -79,9 +81,19 @@ public class ServerInfo {
         this.tag = tag;
     }
 
+    public String getReplicasStatus() {
+        return replicasStatus;
+    }
+
+    public void setReplicasStatus(String replicasStatus) {
+        this.replicasStatus = replicasStatus;
+    }
+
     @Override
     public String toString() {
         return new Gson().toJson(this);
     }
+
+
 }
 
