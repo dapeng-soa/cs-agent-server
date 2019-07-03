@@ -5,12 +5,13 @@ import com.google.gson.Gson;
 /**
  * webAgent serverTime 事件请求格式:
  * List<String> serviceNames</>
- *
+ * <p>
  * agent getServerTimeResp事件返回格式: (time的时间到秒)
  * socketId:serviceName:ip:time:status
- *
+ * <p>
  * server处理方式
  * 将agent返回构造serverTimeInfo
+ *
  * @author struy
  */
 public class ServerInfo {
@@ -22,7 +23,7 @@ public class ServerInfo {
     private long time;
     private boolean status;
     private String tag;
-    private String replicasStatus;
+    private String replicasInfo;
 
 
     public String getNameSpace() {
@@ -81,12 +82,12 @@ public class ServerInfo {
         this.tag = tag;
     }
 
-    public String getReplicasStatus() {
-        return replicasStatus;
+    public String getReplicasInfo() {
+        return replicasInfo;
     }
 
-    public void setReplicasStatus(String replicasStatus) {
-        this.replicasStatus = replicasStatus;
+    public void setReplicasInfo(String replicasInfo) {
+        this.replicasInfo = replicasInfo;
     }
 
     @Override
