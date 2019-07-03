@@ -4,12 +4,8 @@ import java.util
 import java.util.UUID
 import java.util.concurrent._
 
-<<<<<<< HEAD
 import com.corundumstudio.socketio._
-=======
 import com.corundumstudio.socketio.{AckRequest, Configuration, SocketIOClient, SocketIOServer}
-import com.github.dapeng.boostrap.Boostrap.evenDataIsVaild
->>>>>>> e3b16585608cc763b1e65f9a790288d4db1f75a3
 import com.github.dapeng.datasource.ConfigServerSql
 import com.github.dapeng.entity.TServiceBuildRecord
 import com.github.dapeng.socket.entity._
