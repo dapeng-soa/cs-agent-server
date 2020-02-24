@@ -5,3 +5,4 @@ project/project
 *.log
 .DS_Store
 /docker/*.jar
+/dist/*.jar
