@@ -6,7 +6,7 @@ resolvers += Resolver.mavenLocal
 
 lazy val commonSettings = Seq(
   organization := "com.github.dapeng",
-  version := "2.0-SNAPSHOT",
+  version := "2.0.0",
   scalaVersion := "2.12.2"
 )
 
@@ -16,26 +16,12 @@ lazy val api = (project in file("agent_server-api"))
   .settings(
     commonSettings,
     name := "agent_server-api",
-    publishTo := Some("today-snapshots" at "http://nexus.today36524.td/repository/maven-snapshots/"),
-    publishConfiguration := publishConfiguration.value.withOverwrite(true),
-    publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true),
-    publishM2Configuration := publishM2Configuration.value.withOverwrite(true),
-    credentials += Credentials("Sonatype Nexus Repository Manager", "nexus.today36524.td", "central-services", "E@Z.nrW3"),
     libraryDependencies ++= Seq(
       "com.github.wangzaixiang" %% "scala-sql" % "2.0.6",
       "com.google.code.gson" % "gson" % "2.3.1"
     )
   )
 
-/**
-  *
-  * <dependency>
-  * <groupId>io.netty</groupId>
-  * <artifactId>netty-all</artifactId>
-  * <version>4.1.20.Final</version>
-  * </dependency>
-  *
-  */
 lazy val service = (project in file("agent_server-service"))
   .dependsOn( api )
   .settings(
@@ -91,7 +77,7 @@ dist := {
 
   distJar.setExecutable(true, false)
   println("=================================")
-  println(s"build agent at ${distJar.getAbsolutePath}" )
+  println(s"build csAgentServer at ${distJar.getAbsolutePath}" )
 
   distJar
 }

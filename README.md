@@ -1,3 +1,7 @@
+# cs-agent-server
+
+[dapeng-config-server](https://github.com/dapeng-soa/dapeng-config-server) 的socket服务端,用于中转web端事件至agent执行端
+
 ## 打包
 ```sbtshell
 sbt clean service/assembly
@@ -11,7 +15,7 @@ sbt clean service/assembly
 ```sbtshell
 agent_erver
   |-startup.sh #启动脚本
-  |-agent_server.jar #核型启动程序
+  |-agent_server.jar #核心启动程序
 ```
 ## Docker容器启动
 构建镜像

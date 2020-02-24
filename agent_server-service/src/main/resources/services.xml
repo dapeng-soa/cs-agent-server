@@ -53,17 +53,6 @@
         <property name="testWhileIdle" value="true"/>
         <property name="testOnBorrow" value="false"/>
         <property name="testOnReturn" value="false"/>
-
-        <!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
-        <!--
-        <property name="poolPreparedStatements" value="true"/>
-        <property name="maxPoolPreparedStatementPerConnectionSize" value="20"/>
-        -->
-
-        <!-- 配置监控统计拦截的filters -->
-        <!--
-        <property name="filters" value="stat,slf4j"/>
-        -->
         <property name="proxyFilters">
             <list>
                 <ref bean="stat-filter"/>
@@ -72,13 +61,10 @@
         </property>
     </bean>
 
-
     <!-- 配置spring的PlatformTransactionManager，名字为默认值 -->
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="configServer_dataSource"/>
     </bean>
-
-
 
     <!-- 开启事务控制的注解支持 -->
     <tx:annotation-driven/>
