@@ -5,8 +5,8 @@ name := "agent_server"
 resolvers += Resolver.mavenLocal
 
 lazy val commonSettings = Seq(
-  organization := "com.github.dapeng",
-  version := "2.0.0",
+  organization := "com.github.dapeng-soa",
+  version := "2.2.1",
   scalaVersion := "2.12.2"
 )
 
