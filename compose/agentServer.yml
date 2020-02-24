@@ -2,7 +2,7 @@ version: '2'
 services:
   agentServer:
     container_name: agentServer
-    image: dapengsoa/cs-agent-server:V2.0
+    image: dapengsoa/cs-agent-server:2.2.1
     environment:
       socket_server_port: 6886
       build_enable: true
