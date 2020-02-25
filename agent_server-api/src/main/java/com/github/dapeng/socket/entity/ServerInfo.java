@@ -5,34 +5,22 @@ import com.google.gson.Gson;
 /**
  * webAgent serverTime 事件请求格式:
  * List<String> serviceNames</>
- * <p>
+ *
  * agent getServerTimeResp事件返回格式: (time的时间到秒)
  * socketId:serviceName:ip:time:status
- * <p>
+ *
  * server处理方式
  * 将agent返回构造serverTimeInfo
- *
  * @author struy
  */
 public class ServerInfo {
 
     private String socketId;
     private String ip;
-    private String nameSpace;
     private String serviceName;
     private long time;
     private boolean status;
     private String tag;
-    private String replicasInfo;
-
-
-    public String getNameSpace() {
-        return nameSpace;
-    }
-
-    public void setNameSpace(String nameSpace) {
-        this.nameSpace = nameSpace;
-    }
 
     public String getServiceName() {
         return serviceName;
@@ -82,19 +70,9 @@ public class ServerInfo {
         this.tag = tag;
     }
 
-    public String getReplicasInfo() {
-        return replicasInfo;
-    }
-
-    public void setReplicasInfo(String replicasInfo) {
-        this.replicasInfo = replicasInfo;
-    }
-
     @Override
     public String toString() {
         return new Gson().toJson(this);
     }
-
-
 }
 

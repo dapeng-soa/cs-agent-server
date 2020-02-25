@@ -73,6 +73,12 @@ object EventType {
 
   val REMOTE_DEPLOY_RESP = new EventType(29, "remoteDeployResp")
 
+  val CMD_EVENT = new EventType(30, "cmd")
+
+  val CMD_RESP = new EventType(31, "cmdResult")
+
+  val CMD_EXITED = new EventType(32, "cmdExited")
+
   val ERROR_EVENT = new EventType(99, "errorEvent")
 
   def unknown(id: Int) = new EventType(id, id + "")
@@ -109,6 +115,9 @@ object EventType {
     case 27 => RM_CONTAINER_RESP
     case 28 => REMOTE_DEPLOY
     case 29 => REMOTE_DEPLOY_RESP
+    case 30 => CMD_EVENT
+    case 31 => CMD_RESP
+    case 32 => CMD_EXITED
     case 99 => ERROR_EVENT
     case _ => unknown(id)
   }
@@ -143,6 +152,9 @@ object EventType {
     case "rmContainerResp" => RM_CONTAINER_RESP
     case "remoteDeploy" => REMOTE_DEPLOY
     case "remoteDeployResp" => REMOTE_DEPLOY_RESP
+    case "cmd" => CMD_EVENT
+    case "cmdResult" => CMD_RESP
+    case "cmdExit" => CMD_EXITED
     case "errorEvent" => ERROR_EVENT
     case _ => unknown(label)
   }

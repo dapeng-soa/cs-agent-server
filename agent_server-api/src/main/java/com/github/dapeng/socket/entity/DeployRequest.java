@@ -5,8 +5,6 @@ import java.util.Objects;
 public class DeployRequest {
 
     private String ip;
-    //host name
-    private String namespace;
     private String serviceName;
 
     public String getIp() {
@@ -15,14 +13,6 @@ public class DeployRequest {
 
     public void setIp(String ip) {
         this.ip = ip;
-    }
-
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
     }
 
     public String getServiceName() {
@@ -52,7 +42,6 @@ public class DeployRequest {
     public String toString() {
         return "DeployRequest{" +
                 "ip='" + ip + '\'' +
-                ", namespace='" + namespace + '\'' +
                 ", serviceName='" + serviceName + '\'' +
                 '}';
     }

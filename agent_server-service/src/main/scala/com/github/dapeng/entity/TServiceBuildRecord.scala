@@ -2,7 +2,7 @@ package com.github.dapeng.entity
 
 import java.sql.Timestamp
 
-case class TServiceBuildRecord (
+case class TServiceBuildRecord(
    id : Long,
    agentHost: String ,
    buildService: String,
